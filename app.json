@@ -18,11 +18,17 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.othmanlearn.snack82103d8ab8db4122ab8c5ec7edd1f63f"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-font"]
+    "plugins": ["expo-font"],
+    "extra": {
+      "eas": {
+        "projectId": "6be094b7-15dc-4cdc-bd90-3ed05a363b10"
+      }
+    }
   }
 }

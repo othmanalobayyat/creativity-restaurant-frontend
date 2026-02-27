@@ -163,6 +163,7 @@ export default function AppNavigator() {
         component={CartStack}
         options={{
           headerShown: false,
+          title: "Cart",
           tabBarBadge: cart?.length ? cart.length : undefined,
           tabBarBadgeStyle: { backgroundColor: "#ff851b", color: "white" },
         }}
@@ -170,12 +171,12 @@ export default function AppNavigator() {
       <Tab.Screen
         name="Favorites"
         component={FavoritesScreen}
-        options={{ headerShown: false }}
+        options={{ headerShown: false, title: "Favorites" }}
       />
       <Tab.Screen
         name="ProfileTab"
         component={ProfileStack}
-        options={{ headerShown: false }}
+        options={{ headerShown: false, title: "Profile" }}
       />
     </Tab.Navigator>
   );

@@ -1,4 +1,6 @@
+// src/screens/Profile/ProfileScreen.js
 import React, { useEffect, useState, useCallback, useContext } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   View,
   Text,
@@ -25,21 +27,29 @@ export default function ProfileScreen({ navigation }) {
   const [isNotificationEnabled, setIsNotificationEnabled] = useState(false);
   const [profileName, setProfileName] = useState("Guest");
 
-  useEffect(() => {
-    (async () => {
-      const rawProfile = await AsyncStorage.getItem(PROFILE_KEY);
-      if (rawProfile) {
-        const p = JSON.parse(rawProfile);
-        setProfileName(p?.fullName || "Guest");
-      }
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
 
-      const rawSettings = await AsyncStorage.getItem(SETTINGS_KEY);
-      if (rawSettings) {
-        const s = JSON.parse(rawSettings);
-        setIsNotificationEnabled(Boolean(s?.notifications));
-      }
-    })();
-  }, []);
+      (async () => {
+        const rawProfile = await AsyncStorage.getItem(PROFILE_KEY);
+        if (active && rawProfile) {
+          const p = JSON.parse(rawProfile);
+          setProfileName(p?.fullName || "Guest");
+        }
+
+        const rawSettings = await AsyncStorage.getItem(SETTINGS_KEY);
+        if (active && rawSettings) {
+          const s = JSON.parse(rawSettings);
+          setIsNotificationEnabled(Boolean(s?.notifications));
+        }
+      })();
+
+      return () => {
+        active = false;
+      };
+    }, []),
+  );
 
   const toggleSwitch = useCallback(async () => {
     setIsNotificationEnabled((prev) => {
@@ -144,7 +154,7 @@ export default function ProfileScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, marginTop: StatusBar.currentHeight || 0 },
+  container: { flex: 1 },
   contentContainer: { flex: 1 },
   title: { fontSize: 24, fontWeight: "bold", marginLeft: 20, marginTop: 20 },
   subtitle: { marginLeft: 20, marginTop: 6, color: "#666" },

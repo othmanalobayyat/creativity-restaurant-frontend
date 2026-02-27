@@ -69,36 +69,30 @@ export default function AllMyOrdersScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <StatusBar backgroundColor="#ff851b" />
-      <AppHeader showLogo />
+      <Text style={styles.title}>All My Orders</Text>
 
-      <View style={styles.content}>
-        <Text style={styles.title}>All My Orders</Text>
+      {loading ? (
+        <Text style={styles.msg}>Loading...</Text>
+      ) : orders.length === 0 ? (
+        <Text style={styles.msg}>No orders yet</Text>
+      ) : (
+        <FlatList
+          data={orders}
+          keyExtractor={(item) => String(item.id)}
+          renderItem={renderItem}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
 
-        {loading ? (
-          <Text style={styles.msg}>Loading...</Text>
-        ) : orders.length === 0 ? (
-          <Text style={styles.msg}>No orders yet</Text>
-        ) : (
-          <FlatList
-            data={orders}
-            keyExtractor={(item) => String(item.id)}
-            renderItem={renderItem}
-            showsVerticalScrollIndicator={false}
-          />
-        )}
-
-        <TouchableOpacity style={styles.refreshBtn} onPress={loadOrders}>
-          <Text style={styles.refreshText}>Refresh</Text>
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity style={styles.refreshBtn} onPress={loadOrders}>
+        <Text style={styles.refreshText}>Refresh</Text>
+      </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, marginTop: StatusBar.currentHeight || 0 },
-  content: { flex: 1, padding: 16 },
+  container: { flex: 1, padding: 16 },
 
   title: { fontSize: 22, fontWeight: "bold", marginBottom: 12 },
 
