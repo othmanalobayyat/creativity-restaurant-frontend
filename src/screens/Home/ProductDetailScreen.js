@@ -1,12 +1,13 @@
+// src/screens/Home/ProductDetailScreen.js
 import React, { useContext, useMemo, useCallback } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  Button,
   Image,
   ScrollView,
   Alert,
+  TouchableOpacity,
 } from "react-native";
 import { CartContext } from "../../context/CartContext";
 
@@ -49,13 +50,14 @@ export default function ProductDetailScreen({ route }) {
 
         <Text style={styles.description}>{item.description}</Text>
 
-        <View style={styles.buttonWrapper}>
-          <Button
-            color="#ff851b"
-            title="Add to cart"
-            onPress={handleAddToCart}
-          />
-        </View>
+        {/* ✅ زر جديد احترافي */}
+        <TouchableOpacity
+          style={styles.addButton}
+          activeOpacity={0.85}
+          onPress={handleAddToCart}
+        >
+          <Text style={styles.addButtonText}>Add to cart</Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );
@@ -79,8 +81,8 @@ const styles = StyleSheet.create({
 
   image: {
     width: "100%",
-    height: 200,
-    borderRadius: 10,
+    height: 220,
+    borderRadius: 15,
     marginBottom: 16,
   },
 
@@ -95,17 +97,36 @@ const styles = StyleSheet.create({
   name: { fontSize: 18, fontWeight: "bold" },
 
   price: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "bold",
     color: "#ff851b",
   },
 
   description: {
-    fontSize: 16,
+    fontSize: 15,
     textAlign: "center",
-    marginBottom: 15,
+    marginBottom: 20,
     marginTop: 10,
+    color: "#444",
   },
 
-  buttonWrapper: { borderRadius: 25, overflow: "hidden" },
+  /* 🔥 الزر الجديد */
+  addButton: {
+    backgroundColor: "#ff851b",
+    height: 50,
+    borderRadius: 25,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 8,
+    elevation: 3,
+  },
+
+  addButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
 });

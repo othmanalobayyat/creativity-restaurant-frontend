@@ -1,3 +1,4 @@
+// src/components/ProductCard.js
 import React, { memo, useCallback, useEffect, useState } from "react";
 import {
   View,
@@ -8,9 +9,9 @@ import {
   StyleSheet,
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
-import { isFavorite, toggleFavorite } from "../utils/favoritesStorage"; // عدّل المسار لو مختلف
+import { isFavorite, toggleFavorite } from "../utils/favoritesStorage";
 
-function ProductCard({ item, onOpen }) {
+function ProductCard({ item, onOpen, onFavChanged, favSyncKey }) {
   const [fav, setFav] = useState(false);
 
   const handlePress = useCallback(() => onOpen(item), [onOpen, item]);
@@ -25,12 +26,16 @@ function ProductCard({ item, onOpen }) {
     return () => {
       active = false;
     };
-  }, [item.id]);
+  }, [item.id, favSyncKey]);
 
   const onToggleFav = useCallback(async () => {
     const nextList = await toggleFavorite(item.id);
-    setFav(nextList.includes(String(item.id)));
-  }, [item.id]);
+    const isNowFav = nextList.includes(String(item.id));
+    setFav(isNowFav);
+
+    // ✅ بلّغ الشاشة الأم (FavoritesScreen) عشان تشيل العنصر فورًا إذا انشال من المفضلة
+    if (onFavChanged) onFavChanged(item.id, isNowFav);
+  }, [item.id, onFavChanged]);
 
   return (
     <Pressable

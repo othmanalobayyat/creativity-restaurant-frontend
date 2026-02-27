@@ -8,52 +8,57 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import AppHeader from "../../components/AppHeader";
-
-const AUTH_KEY = "APP_AUTH";
-const PROFILE_KEY = "APP_PROFILE";
+import { BASE_URL } from "../../config/api";
+import { useAuth } from "../../context/AuthContext";
 
 export default function RegisterScreen({ navigation }) {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const { login } = useAuth();
 
   const onRegister = useCallback(async () => {
     const n = fullName.trim();
     const e = email.trim().toLowerCase();
+    const ph = phone.trim();
 
-    if (!n || !e || !password || !confirm) {
-      Alert.alert("Missing info", "Please fill all fields.");
-      return;
-    }
-    if (!e.includes("@") || !e.includes(".")) {
-      Alert.alert("Invalid email", "Please enter a valid email.");
-      return;
-    }
-    if (password.length < 6) {
-      Alert.alert("Weak password", "Password must be at least 6 characters.");
-      return;
-    }
-    if (password !== confirm) {
-      Alert.alert("Mismatch", "Passwords do not match.");
-      return;
-    }
+    if (!n || !e || !password || !confirm)
+      return Alert.alert("Missing info", "Please fill all fields.");
+    if (!e.includes("@") || !e.includes("."))
+      return Alert.alert("Invalid email", "Please enter a valid email.");
+    if (password.length < 6)
+      return Alert.alert(
+        "Weak password",
+        "Password must be at least 6 characters.",
+      );
+    if (password !== confirm)
+      return Alert.alert("Mismatch", "Passwords do not match.");
 
-    // ✅ مؤقت بدون BE: نحفظ “بروفايل” + نعتبره مسجل دخول
-    await AsyncStorage.setItem(
-      PROFILE_KEY,
-      JSON.stringify({ fullName: n, email: e }),
-    );
-    await AsyncStorage.setItem(
-      AUTH_KEY,
-      JSON.stringify({ isLoggedIn: true, email: e }),
-    );
+    try {
+      const res = await fetch(`${BASE_URL}/api/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName: n,
+          email: e,
+          phone: ph || null,
+          password,
+        }),
+      });
 
-    Alert.alert("Success", "Account created successfully!");
-    navigation.reset({ index: 0, routes: [{ name: "MainTabs" }] });
-  }, [fullName, email, password, confirm, navigation]);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || "Register failed");
+
+      // ✅ سجل دخول مباشرة بعد التسجيل
+      await login({ token: json.token, user: json.user });
+      Alert.alert("Success", "Account created successfully!");
+    } catch (err) {
+      Alert.alert("Register error", String(err.message || err));
+    }
+  }, [fullName, email, phone, password, confirm, login]);
 
   return (
     <View style={styles.container}>
@@ -69,7 +74,13 @@ export default function RegisterScreen({ navigation }) {
           value={fullName}
           onChangeText={setFullName}
         />
-
+        <TextInput
+          style={styles.input}
+          placeholder="Phone (optional)"
+          value={phone}
+          onChangeText={setPhone}
+          keyboardType="phone-pad"
+        />
         <TextInput
           style={styles.input}
           placeholder="Email"
@@ -78,7 +89,6 @@ export default function RegisterScreen({ navigation }) {
           autoCapitalize="none"
           keyboardType="email-address"
         />
-
         <TextInput
           style={styles.input}
           placeholder="Password"
@@ -86,7 +96,6 @@ export default function RegisterScreen({ navigation }) {
           onChangeText={setPassword}
           secureTextEntry
         />
-
         <TextInput
           style={styles.input}
           placeholder="Confirm Password"
@@ -104,7 +113,7 @@ export default function RegisterScreen({ navigation }) {
           onPress={() => navigation.goBack()}
         >
           <Text style={styles.link}>
-            Already have an account?{" "}
+            {"Already have an account? "}
             <Text style={styles.linkStrong}>Login</Text>
           </Text>
         </TouchableOpacity>
@@ -122,7 +131,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: "center",
   },
-
   input: {
     backgroundColor: "#fff",
     borderWidth: 1,
@@ -131,7 +139,6 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 12,
   },
-
   button: {
     backgroundColor: "#ff851b",
     padding: 14,
@@ -140,7 +147,6 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   buttonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
-
   linkWrap: { marginTop: 14, alignItems: "center" },
   link: { color: "#666" },
   linkStrong: { color: "#ff851b", fontWeight: "bold" },

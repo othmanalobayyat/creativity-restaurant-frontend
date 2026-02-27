@@ -1,10 +1,30 @@
-import React from "react";
+// src/screens/Cart/OrderConfirmationScreen.js
+import React, { useCallback } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 
 export default function OrderConfirmationScreen({ route, navigation }) {
   const total = Number(route.params?.total || 0);
   const itemsCount = Number(route.params?.itemsCount || 0);
+
+  const goHome = useCallback(() => {
+    navigation.reset({
+      index: 0,
+      routes: [{ name: "HomeTab" }],
+    });
+  }, [navigation]);
+
+  const goOrders = useCallback(() => {
+    navigation.reset({
+      index: 0,
+      routes: [
+        {
+          name: "ProfileTab",
+          params: { screen: "AllMyOrders" },
+        },
+      ],
+    });
+  }, [navigation]);
 
   return (
     <View style={styles.container}>
@@ -14,16 +34,13 @@ export default function OrderConfirmationScreen({ route, navigation }) {
         {itemsCount} item(s) • Total: $ {total.toFixed(2)}
       </Text>
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate("HomeTab")}
-      >
+      <TouchableOpacity style={styles.button} onPress={goHome}>
         <Text style={styles.buttonText}>Back to Home</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         style={[styles.button, styles.secondary]}
-        onPress={() => navigation.navigate("AllMyOrders")}
+        onPress={goOrders}
       >
         <Text style={[styles.buttonText, styles.secondaryText]}>
           View Orders
@@ -46,12 +63,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#ff851b",
     paddingVertical: 14,
     paddingHorizontal: 24,
-    borderRadius: 10,
+    borderRadius: 12,
     marginTop: 12,
     width: "80%",
     alignItems: "center",
   },
-  buttonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
+  buttonText: { color: "#fff", fontWeight: "900", fontSize: 16 },
   secondary: {
     backgroundColor: "#fff",
     borderWidth: 1,

@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Icon from "react-native-vector-icons/FontAwesome";
-
+import { Platform } from "react-native";
 import { CartContext } from "../context/CartContext";
 
 // screens
@@ -16,6 +16,7 @@ import ProfileScreen from "../screens/Profile/ProfileScreen";
 import ManageProfileScreen from "../screens/Profile/ManageProfileScreen";
 import ChangePasswordScreen from "../screens/Profile/ChangePasswordScreen";
 import AllMyOrdersScreen from "../screens/Profile/AllMyOrdersScreen";
+import OrderDetailsScreen from "../screens/Profile/OrderDetailsScreen";
 import FavoritesScreen from "../screens/Favorites/FavoritesScreen";
 
 const Tab = createBottomTabNavigator();
@@ -23,7 +24,19 @@ const Stack = createNativeStackNavigator();
 
 function HomeStack() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: "#ff851b" },
+        headerTintColor: "#fff",
+        headerTitleStyle: { fontWeight: "bold" },
+        headerBackTitleVisible: false,
+
+        // ✅ يثبت لون المنطقة اللي فوق على Android
+        statusBarStyle: "light",
+        statusBarColor: "#ff851b",
+        statusBarTranslucent: Platform.OS === "android" ? false : undefined,
+      }}
+    >
       <Stack.Screen
         name="Home"
         component={HomeScreen}
@@ -32,11 +45,7 @@ function HomeStack() {
       <Stack.Screen
         name="ProductDetail"
         component={ProductDetailScreen}
-        options={{
-          title: "Product Detail",
-          headerStyle: { backgroundColor: "#ff851b" },
-          headerTintColor: "#ffffff",
-        }}
+        options={{ title: "Product Detail" }}
       />
     </Stack.Navigator>
   );
@@ -111,6 +120,14 @@ function ProfileStack() {
         component={AllMyOrdersScreen}
         options={{
           title: "All My Orders",
+          headerStyle: { backgroundColor: "#ff851b" },
+        }}
+      />
+      <Stack.Screen
+        name="OrderDetails"
+        component={OrderDetailsScreen}
+        options={{
+          title: "Order Details",
           headerStyle: { backgroundColor: "#ff851b" },
         }}
       />

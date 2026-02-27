@@ -1,3 +1,4 @@
+// src/components/Categories.js
 import React, { useState, useCallback } from "react";
 import {
   View,
@@ -58,7 +59,11 @@ function CategoryItem({ item, isSelected, onPress }) {
         source={isSelected ? item.selectedIcon : item.icon}
         style={styles.categoryIcon}
       />
-      <Text style={isSelected ? styles.selectedText : styles.text}>
+      <Text
+        numberOfLines={1}
+        ellipsizeMode="tail"
+        style={isSelected ? styles.selectedText : styles.text}
+      >
         {item.name}
       </Text>
     </TouchableOpacity>
@@ -109,8 +114,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#e0e0e0",
     alignItems: "center",
     padding: 10,
-    width: 85,
-    height: 85,
+    width: 95,
+    height: 95,
     borderRadius: 10,
     marginLeft: 10,
   },
@@ -125,10 +130,14 @@ const styles = StyleSheet.create({
   text: {
     color: "#000",
     fontSize: 11,
+    textAlign: "center",
+    marginTop: 2,
   },
   selectedText: {
-    color: "#FFFFFF",
+    color: "#fff",
     fontSize: 11,
-    fontWeight: "bold",
+    fontWeight: "700", // بدل bold (iOS أحياناً بيغير القياس)
+    textAlign: "center",
+    marginTop: 2,
   },
 });

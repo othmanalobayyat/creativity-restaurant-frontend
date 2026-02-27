@@ -1,77 +1,96 @@
-import React, { createContext, useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+// src/context/CartContext.js
+import React, { createContext, useState, useEffect, useCallback } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// Create a context for the cart
 export const CartContext = createContext();
 
-// Provider component to manage the cart state and provide it to the rest of the app
+const CART_KEY = "cart";
+
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
 
-  // Load the cart from AsyncStorage when the component mounts
   useEffect(() => {
-    const loadCart = async () => {
+    (async () => {
       try {
-        const savedCart = await AsyncStorage.getItem('cart');
-        if (savedCart) {
-          setCart(JSON.parse(savedCart));
-        }
-      } catch (error) {
-        console.error('Failed to load the cart from storage', error);
+        const saved = await AsyncStorage.getItem(CART_KEY);
+        if (saved) setCart(JSON.parse(saved));
+      } catch (e) {
+        console.log("Load cart error:", e?.message || e);
       }
-    };
-
-    loadCart();
+    })();
   }, []);
 
-  // Save the cart to AsyncStorage
-  const saveCart = async (newCart) => {
+  const saveCart = useCallback(async (newCart) => {
     try {
-      await AsyncStorage.setItem('cart', JSON.stringify(newCart));
-    } catch (error) {
-      console.error('Failed to save the cart to storage', error);
+      await AsyncStorage.setItem(CART_KEY, JSON.stringify(newCart));
+    } catch (e) {
+      console.log("Save cart error:", e?.message || e);
     }
-  };
+  }, []);
 
-  // Add a product to the cart
-  const addToCart = (product) => {
-    const itemIndex = cart.findIndex((cartItem) => cartItem.id === product.id);
-    if (itemIndex > -1) increaseQuantity(itemIndex);
-    else {
-      const newCart = [...cart, { ...product, quantity: 1 }];
-      setCart(newCart);
-      saveCart(newCart); // Save the updated cart to AsyncStorage
-    }
-  };
+  const clearCart = useCallback(() => {
+    setCart([]);
+    saveCart([]);
+  }, [saveCart]);
 
-  // Increase the quantity of a product in the cart
-  const increaseQuantity = (index) => {
-    const newCart = [...cart];
-    newCart[index].quantity += 1;
-    setCart(newCart);
-    saveCart(newCart); // Save the updated cart to AsyncStorage
-  };
+  const addToCart = useCallback(
+    (product) => {
+      setCart((prev) => {
+        const idx = prev.findIndex((x) => String(x.id) === String(product.id));
+        let next;
+        if (idx > -1) {
+          next = prev.map((x) =>
+            String(x.id) === String(product.id)
+              ? { ...x, quantity: (Number(x.quantity) || 0) + 1 }
+              : x,
+          );
+        } else {
+          next = [...prev, { ...product, quantity: 1 }];
+        }
+        saveCart(next);
+        return next;
+      });
+    },
+    [saveCart],
+  );
 
-  // Decrease the quantity of a product in the cart, or remove it if quantity is 1
-  const decreaseQuantity = (index) => {
-    const newCart = [...cart];
-    if (newCart[index].quantity > 1) {
-      newCart[index].quantity -= 1;
-    } else {
-      newCart.splice(index, 1);
-    }
-    setCart(newCart);
-    saveCart(newCart); // Save the updated cart to AsyncStorage
-  };
+  const increaseQuantity = useCallback(
+    (id) => {
+      setCart((prev) => {
+        const next = prev.map((x) =>
+          String(x.id) === String(id)
+            ? { ...x, quantity: (Number(x.quantity) || 0) + 1 }
+            : x,
+        );
+        saveCart(next);
+        return next;
+      });
+    },
+    [saveCart],
+  );
 
-  // Value object to be provided to the context
-  const value = {
-    cart,
-    addToCart,
-    increaseQuantity,
-    decreaseQuantity,
-  };
+  const decreaseQuantity = useCallback(
+    (id) => {
+      setCart((prev) => {
+        const next = prev
+          .map((x) =>
+            String(x.id) === String(id)
+              ? { ...x, quantity: (Number(x.quantity) || 0) - 1 }
+              : x,
+          )
+          .filter((x) => (Number(x.quantity) || 0) > 0);
+        saveCart(next);
+        return next;
+      });
+    },
+    [saveCart],
+  );
 
-  // Provide the cart context to the children components
-  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+  return (
+    <CartContext.Provider
+      value={{ cart, addToCart, increaseQuantity, decreaseQuantity, clearCart }}
+    >
+      {children}
+    </CartContext.Provider>
+  );
 };

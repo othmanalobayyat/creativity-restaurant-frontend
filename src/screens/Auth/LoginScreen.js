@@ -8,51 +8,44 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import AppHeader from "../../components/AppHeader";
-
-const AUTH_KEY = "APP_AUTH"; // تخزين مؤقت
-const PROFILE_KEY = "APP_PROFILE";
+import { BASE_URL } from "../../config/api";
+import { useAuth } from "../../context/AuthContext";
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { login } = useAuth();
 
   const onLogin = useCallback(async () => {
     const e = email.trim().toLowerCase();
     const p = password;
 
-    if (!e || !p) {
-      Alert.alert("Missing info", "Please enter email and password.");
-      return;
-    }
-    if (!e.includes("@") || !e.includes(".")) {
-      Alert.alert("Invalid email", "Please enter a valid email.");
-      return;
-    }
-    if (p.length < 6) {
-      Alert.alert("Weak password", "Password must be at least 6 characters.");
-      return;
-    }
-
-    // ✅ مؤقت بدون BE:
-    await AsyncStorage.setItem(
-      AUTH_KEY,
-      JSON.stringify({ isLoggedIn: true, email: e }),
-    );
-
-    // (اختياري) إذا ما في profile، اعمل واحد بسيط
-    const rawProfile = await AsyncStorage.getItem(PROFILE_KEY);
-    if (!rawProfile) {
-      await AsyncStorage.setItem(
-        PROFILE_KEY,
-        JSON.stringify({ fullName: "Guest", email: e }),
+    if (!e || !p)
+      return Alert.alert("Missing info", "Please enter email and password.");
+    if (!e.includes("@") || !e.includes("."))
+      return Alert.alert("Invalid email", "Please enter a valid email.");
+    if (p.length < 6)
+      return Alert.alert(
+        "Weak password",
+        "Password must be at least 6 characters.",
       );
-    }
 
-    // روح على التطبيق
-    navigation.reset({ index: 0, routes: [{ name: "MainTabs" }] });
-  }, [email, password, navigation]);
+    try {
+      const res = await fetch(`${BASE_URL}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: e, password: p }),
+      });
+
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || "Login failed");
+
+      await login({ token: json.token, user: json.user });
+    } catch (err) {
+      Alert.alert("Login error", String(err.message || err));
+    }
+  }, [email, password, login]);
 
   return (
     <View style={styles.container}>
@@ -88,7 +81,7 @@ export default function LoginScreen({ navigation }) {
           onPress={() => navigation.navigate("Register")}
         >
           <Text style={styles.link}>
-            Don&apos;t have an account?{" "}
+            {"Don't have an account? "}
             <Text style={styles.linkStrong}>Register</Text>
           </Text>
         </TouchableOpacity>
@@ -106,7 +99,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: "center",
   },
-
   input: {
     backgroundColor: "#fff",
     borderWidth: 1,
@@ -115,7 +107,6 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 12,
   },
-
   button: {
     backgroundColor: "#ff851b",
     padding: 14,
@@ -124,7 +115,6 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   buttonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
-
   linkWrap: { marginTop: 14, alignItems: "center" },
   link: { color: "#666" },
   linkStrong: { color: "#ff851b", fontWeight: "bold" },

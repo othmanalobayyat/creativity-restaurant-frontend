@@ -1,12 +1,6 @@
+// src/screens/Favorites/FavoritesScreen.js
 import React, { useCallback, useMemo, useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  StatusBar,
-  FlatList,
-  Image,
-} from "react-native";
+import { View, Text, StyleSheet, FlatList, Image } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import AppHeader from "../../components/AppHeader";
 import mockData from "../../data/mockData";
@@ -53,9 +47,15 @@ export default function FavoritesScreen({ navigation }) {
     [navigation],
   );
 
+  // ✅ هذا اللي بخلي الإزالة فورية من صفحة Favorites نفسها
+  const onFavChanged = useCallback((id, isNowFav) => {
+    if (!isNowFav) {
+      setFavoriteIds((prev) => prev.filter((x) => String(x) !== String(id)));
+    }
+  }, []);
+
   return (
     <View style={styles.container}>
-      <StatusBar backgroundColor="#ff851b" />
       <AppHeader showLogo />
 
       <Text style={styles.title}>Favorites</Text>
@@ -79,6 +79,7 @@ export default function FavoritesScreen({ navigation }) {
             <ProductCard
               item={{ ...item, image: `${item.image}?=${item.id}` }}
               onOpen={onOpenProduct}
+              onFavChanged={onFavChanged}
             />
           )}
           showsVerticalScrollIndicator={false}
@@ -89,7 +90,7 @@ export default function FavoritesScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, marginTop: StatusBar.currentHeight || 0 },
+  container: { flex: 1 },
   title: {
     fontSize: 24,
     fontWeight: "bold",

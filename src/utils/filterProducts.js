@@ -1,3 +1,4 @@
+// src/utils/filterProducts.js
 export function filterProducts(products, { search, selectedCategory }) {
   const s = (search || "").trim().toLowerCase();
 

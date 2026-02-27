@@ -1,4 +1,12 @@
-import React, { useMemo, useCallback, useContext } from "react";
+// src/screens/Cart/CheckoutScreen.js
+import { BASE_URL } from "../../config/api";
+import React, {
+  useMemo,
+  useCallback,
+  useContext,
+  useState,
+  useLayoutEffect,
+} from "react";
 import {
   View,
   Text,
@@ -8,13 +16,45 @@ import {
   ScrollView,
   Alert,
 } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { CartContext } from "../../context/CartContext";
+import { apiFetch } from "../../utils/apiFetch";
 
 export default function CheckoutScreen({ route, navigation }) {
   const { clearCart } = useContext(CartContext);
-
   const items = route.params?.items ?? [];
+
+  const [address, setAddress] = useState({ city: "", street: "" });
+
+  // ✅ هيدر داخلي (Navigation header) بدل AppHeader
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: "Checkout",
+      headerBackTitleVisible: false,
+      headerTintColor: "#fff",
+      headerStyle: { backgroundColor: "#ff851b" },
+      headerTitleStyle: { fontWeight: "bold" },
+    });
+  }, [navigation]);
+
+  const loadAddress = useCallback(async () => {
+    try {
+      const res = await apiFetch(`${BASE_URL}/api/me/address`);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || "Failed to load address");
+      setAddress({ city: json.city || "", street: json.street || "" });
+    } catch (e) {
+      console.log("Address load error:", e?.message || e);
+    }
+  }, []);
+
+  // ✅ أهم نقطة: ينعكس فورًا بعد ما ترجع من Address
+  useFocusEffect(
+    useCallback(() => {
+      loadAddress();
+    }, [loadAddress]),
+  );
 
   const totalPrice = useMemo(() => {
     return items.reduce((acc, item) => {
@@ -24,40 +64,71 @@ export default function CheckoutScreen({ route, navigation }) {
     }, 0);
   }, [items]);
 
+  const goToAddress = useCallback(() => {
+    navigation.navigate("Address");
+  }, [navigation]);
+
+  const placeOrder = useCallback(async () => {
+    try {
+      const payload = {
+        items: items.map((x) => ({ itemId: x.id, quantity: x.quantity })),
+      };
+
+      const res = await apiFetch(`${BASE_URL}/api/orders`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || "Order failed");
+
+      clearCart?.();
+      navigation.replace("OrderConfirmation", {
+        total: json.total,
+        itemsCount: items.length,
+      });
+    } catch (e) {
+      Alert.alert("Error", String(e.message || e));
+    }
+  }, [items, clearCart, navigation]);
+
   const confirmOrder = useCallback(() => {
     if (!items.length) {
       Alert.alert("Cart is empty", "Add items before checkout.");
       return;
     }
 
+    const hasAddress = address.city.trim() && address.street.trim();
+
+    if (!hasAddress) {
+      Alert.alert(
+        "Address required",
+        "Please add your delivery address before confirming the order.",
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Add Address", onPress: goToAddress },
+        ],
+      );
+      return;
+    }
+
+    // ✅ تأكيد العنوان دائمًا (حتى لو ما تغيّر)
     Alert.alert(
-      "Confirm Order",
-      "Do you want to place this order?",
+      "Confirm Address",
+      `Deliver to:\n${address.city}, ${address.street}\n\nIs this correct?`,
       [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Confirm",
-          onPress: () => {
-            // FE جاهز: هون مستقبلاً رح تنادي API
-            clearCart?.();
-            navigation.replace("OrderConfirmation", {
-              total: totalPrice,
-              itemsCount: items.length,
-            });
-          },
-        },
+        { text: "Change", onPress: goToAddress },
+        { text: "Yes, continue", onPress: placeOrder },
       ],
       { cancelable: true },
     );
-  }, [items.length, clearCart, navigation, totalPrice]);
-
-  const goToAddress = useCallback(() => {
-    navigation.navigate("Address");
-  }, [navigation]);
+  }, [items, address, goToAddress, placeOrder]);
 
   return (
     <View style={styles.container}>
-      <StatusBar backgroundColor="#ff851b" />
+      {/* ✅ خليه يطابق الستايل القديم */}
+      <StatusBar backgroundColor="#ff851b" barStyle="light-content" />
+
       <ScrollView>
         <View style={styles.section}>
           <View style={styles.headerRow}>
@@ -71,9 +142,10 @@ export default function CheckoutScreen({ route, navigation }) {
             <View style={styles.logoAddressContainer}>
               <Icon name="location-on" size={24} color="#ff851b" />
               <View style={styles.addressDetails}>
-                {/* مؤقت: بعدين بتجيبها من state/AsyncStorage */}
                 <Text style={styles.addressText}>
-                  Bethlehem, Wadshaheen st.
+                  {address.city && address.street
+                    ? `${address.city}, ${address.street}`
+                    : "No saved address"}
                 </Text>
               </View>
             </View>
@@ -125,7 +197,9 @@ export default function CheckoutScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, marginTop: StatusBar.currentHeight || 0 },
+  // ✅ شلت marginTop لأنه اللي بخرب الأندرويد غالبًا
+  container: { flex: 1 },
+
   section: {
     backgroundColor: "#fff",
     borderRadius: 10,

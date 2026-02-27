@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useContext } from "react";
 import {
   View,
   Text,
@@ -12,13 +12,16 @@ import {
 import Icon from "react-native-vector-icons/MaterialIcons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import AppHeader from "../../components/AppHeader";
+import { CartContext } from "../../context/CartContext";
+import { useAuth } from "../../context/AuthContext";
 
 const PROFILE_KEY = "APP_PROFILE";
 const SETTINGS_KEY = "APP_SETTINGS";
-const ORDERS_KEY = "APP_ORDERS";
-const ADDRESS_KEY = "APP_ADDRESS";
 
 export default function ProfileScreen({ navigation }) {
+  const { logout } = useAuth(); // ✅ لازم جوا component
+  const { clearCart } = useContext(CartContext); // ✅ لازم جوا component
+
   const [isNotificationEnabled, setIsNotificationEnabled] = useState(false);
   const [profileName, setProfileName] = useState("Guest");
 
@@ -49,38 +52,22 @@ export default function ProfileScreen({ navigation }) {
     });
   }, []);
 
-  const logout = useCallback(() => {
-    Alert.alert(
-      "Logout",
-      "Do you want to logout?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Logout",
-          style: "destructive",
-          onPress: async () => {
-            await AsyncStorage.multiRemove([
-              PROFILE_KEY,
-              SETTINGS_KEY,
-              ORDERS_KEY,
-              ADDRESS_KEY,
-              "APP_AUTH", // 🔥 أهم سطر
-            ]);
-
-            navigation.reset({
-              index: 0,
-              routes: [{ name: "Login" }],
-            });
-          },
+  const onLogout = useCallback(() => {
+    Alert.alert("Logout", "Do you want to logout?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Logout",
+        style: "destructive",
+        onPress: async () => {
+          clearCart?.(); // ✅ يفضّي السلة
+          await logout(); // ✅ يغير isLoggedIn=false فوراً => RootNavigator يرجع Login
         },
-      ],
-      { cancelable: true },
-    );
-  }, [navigation]);
+      },
+    ]);
+  }, [clearCart, logout]);
 
   return (
     <View style={styles.container}>
-      <StatusBar backgroundColor="#ff851b" />
       <AppHeader showLogo />
 
       <View style={styles.contentContainer}>
@@ -145,7 +132,8 @@ export default function ProfileScreen({ navigation }) {
           </View>
 
           <View style={styles.logoutContainer}>
-            <TouchableOpacity style={styles.logoutButton} onPress={logout}>
+            {/* ✅ لازم onLogout مش logout */}
+            <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
               <Text style={styles.logoutButtonText}>Logout</Text>
             </TouchableOpacity>
           </View>
@@ -158,10 +146,8 @@ export default function ProfileScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: { flex: 1, marginTop: StatusBar.currentHeight || 0 },
   contentContainer: { flex: 1 },
-
   title: { fontSize: 24, fontWeight: "bold", marginLeft: 20, marginTop: 20 },
   subtitle: { marginLeft: 20, marginTop: 6, color: "#666" },
-
   section: {
     backgroundColor: "#fff",
     borderRadius: 10,
@@ -186,7 +172,6 @@ const styles = StyleSheet.create({
   },
   sectionItemText: { marginLeft: 15 },
   sectionItemContent: { flexDirection: "row", alignItems: "center" },
-
   logoutContainer: { padding: 16 },
   logoutButton: {
     backgroundColor: "#ff851b",

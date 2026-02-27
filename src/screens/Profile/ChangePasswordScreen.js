@@ -8,35 +8,45 @@ import {
   Alert,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
+import { BASE_URL } from "../../config/api";
+import { apiFetch } from "../../utils/apiFetch";
 
 export default function ChangePasswordScreen({ navigation }) {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handlePasswordChange = useCallback(() => {
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      Alert.alert("Missing info", "Please fill all fields.");
-      return;
-    }
-    if (newPassword.length < 6) {
-      Alert.alert(
+  const handlePasswordChange = useCallback(async () => {
+    if (!currentPassword || !newPassword || !confirmPassword)
+      return Alert.alert("Missing info", "Please fill all fields.");
+
+    if (newPassword.length < 6)
+      return Alert.alert(
         "Weak password",
         "New password must be at least 6 characters.",
       );
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      Alert.alert(
+
+    if (newPassword !== confirmPassword)
+      return Alert.alert(
         "Mismatch",
         "New password and confirm password do not match.",
       );
-      return;
-    }
 
-    // مؤقتاً: ما في BE. لاحقاً هون call API
-    Alert.alert("Success", "Password changed successfully (temporary).");
-    navigation.goBack();
+    try {
+      const res = await apiFetch(`${BASE_URL}/api/auth/change-password`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || "Change password failed");
+
+      Alert.alert("Success", "Password changed successfully.");
+      navigation.goBack();
+    } catch (e) {
+      Alert.alert("Error", String(e.message || e));
+    }
   }, [currentPassword, newPassword, confirmPassword, navigation]);
 
   return (

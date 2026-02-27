@@ -1,32 +1,24 @@
-// src/screens/Cart/CartScreen.js
+// src/screens/Cart/old
 import React, { useContext, useMemo, useCallback } from "react";
 import {
   View,
   Text,
   FlatList,
   StyleSheet,
+  StatusBar,
   Image,
   TouchableOpacity,
 } from "react-native";
 import { CartContext } from "../../context/CartContext";
 import AppHeader from "../../components/AppHeader";
 
-const PRIMARY = "#ff851b";
-
-const EmptyCart = ({ onGoHome }) => (
-  <View style={styles.emptyContainer}>
+const EmptyCart = () => (
+  <View style={styles.emptyCartContainer}>
     <Image
       source={require("../assets/empty-cart.png")}
-      style={styles.emptyImage}
+      style={styles.emptyCartImage}
     />
-    <Text style={styles.emptyText}>Your cart is empty</Text>
-    <Text style={styles.emptySubText}>
-      Add some tasty items from the menu 🍔🍕
-    </Text>
-
-    <TouchableOpacity style={styles.emptyBtn} onPress={onGoHome}>
-      <Text style={styles.emptyBtnText}>Browse menu</Text>
-    </TouchableOpacity>
+    <Text style={styles.emptyCartText}>Your Cart is empty</Text>
   </View>
 );
 
@@ -35,9 +27,7 @@ const CartItem = ({ item, onDecrease, onIncrease }) => (
     <Image source={{ uri: item.image }} style={styles.itemImage} />
 
     <View style={styles.itemDetails}>
-      <Text style={styles.itemName} numberOfLines={1}>
-        {item.name}
-      </Text>
+      <Text style={styles.itemName}>{item.name}</Text>
       <Text style={styles.itemPrice}>$ {Number(item.price).toFixed(2)}</Text>
     </View>
 
@@ -70,16 +60,12 @@ export default function CartScreen({ navigation }) {
     navigation.navigate("Checkout", { items: cart });
   }, [navigation, cart]);
 
-  const goHome = useCallback(() => {
-    navigation.navigate("HomeTab");
-  }, [navigation]);
-
   const renderItem = useCallback(
-    ({ item }) => (
+    ({ item, index }) => (
       <CartItem
         item={item}
-        onDecrease={() => decreaseQuantity(item.id)}
-        onIncrease={() => increaseQuantity(item.id)}
+        onDecrease={() => decreaseQuantity(index)}
+        onIncrease={() => increaseQuantity(index)}
       />
     ),
     [decreaseQuantity, increaseQuantity],
@@ -87,67 +73,73 @@ export default function CartScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
+      <StatusBar backgroundColor="#ff851b" />
       <AppHeader showLogo />
 
-      <Text style={styles.title}>Cart</Text>
+      <View style={styles.cartContainer}>
+        <Text style={styles.title}>Cart</Text>
 
-      {cart.length === 0 ? (
-        <EmptyCart onGoHome={goHome} />
-      ) : (
-        <>
-          <FlatList
-            showsVerticalScrollIndicator={false}
-            data={cart}
-            keyExtractor={(item) => String(item.id)}
-            renderItem={renderItem}
-            contentContainerStyle={{ paddingTop: 10, paddingBottom: 10 }}
-          />
+        {cart.length === 0 ? (
+          <EmptyCart />
+        ) : (
+          <>
+            <FlatList
+              showsVerticalScrollIndicator={false}
+              data={cart}
+              keyExtractor={(item) => String(item.id)}
+              renderItem={renderItem}
+            />
 
-          <View style={styles.summaryContainer}>
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryText}>Item Total</Text>
-              <Text style={styles.summaryText}>$ {totalPrice.toFixed(2)}</Text>
+            <View style={styles.summaryContainer}>
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryText}>Item Total</Text>
+                <Text style={styles.summaryText}>
+                  $ {totalPrice.toFixed(2)}
+                </Text>
+              </View>
+
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryText}>Discount</Text>
+                <Text style={styles.summaryText}>0%</Text>
+              </View>
+
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryText}>Delivery Fee</Text>
+                <Text style={styles.summaryText}>Free</Text>
+              </View>
+
+              <View style={styles.totalRow}>
+                <Text style={styles.totalText}>Total</Text>
+                <Text style={styles.totalText}>$ {totalPrice.toFixed(2)}</Text>
+              </View>
+
+              <TouchableOpacity
+                style={styles.checkoutButton}
+                onPress={handleCheckout}
+              >
+                <Text style={styles.checkoutButtonText}>CHECKOUT</Text>
+              </TouchableOpacity>
             </View>
-
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryText}>Discount</Text>
-              <Text style={styles.summaryText}>0%</Text>
-            </View>
-
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryText}>Delivery Fee</Text>
-              <Text style={styles.summaryText}>Free</Text>
-            </View>
-
-            <View style={styles.totalRow}>
-              <Text style={styles.totalText}>Total</Text>
-              <Text style={styles.totalText}>$ {totalPrice.toFixed(2)}</Text>
-            </View>
-
-            <TouchableOpacity
-              style={styles.checkoutButton}
-              onPress={handleCheckout}
-            >
-              <Text style={styles.checkoutButtonText}>CHECKOUT</Text>
-            </TouchableOpacity>
-          </View>
-        </>
-      )}
+          </>
+        )}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  cartContainer: { flex: 1, paddingHorizontal: 20, paddingTop: 14 },
+  container: {
+    flex: 1,
+    marginTop: StatusBar.currentHeight || 0,
+  },
+  cartContainer: { flex: 1, padding: 20 },
 
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    marginLeft: 20,
-    marginTop: 16,
-    marginBottom: 8,
+    marginLeft: 5,
   },
+
   product: {
     flexDirection: "row",
     alignItems: "center",
@@ -163,13 +155,15 @@ const styles = StyleSheet.create({
     marginLeft: 5,
     marginRight: 5,
   },
-
-  // ✅ هذا اللي ناقص وكان بكسر الشاشة
-  itemImage: { width: 60, height: 60, borderRadius: 10, marginRight: 16 },
-
+  itemImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 10,
+    marginRight: 16,
+  },
   itemDetails: { flex: 1 },
   itemName: { fontSize: 16, fontWeight: "bold" },
-  itemPrice: { fontSize: 16, color: "#666", fontWeight: "bold", marginTop: 6 },
+  itemPrice: { fontSize: 16, color: "#666", fontWeight: "bold" },
 
   itemQuantity: { flexDirection: "row", alignItems: "center" },
   quantityButton: {
@@ -183,24 +177,14 @@ const styles = StyleSheet.create({
   quantityButtonText: { fontSize: 18, color: "#333" },
   quantityText: { marginHorizontal: 8, fontSize: 16 },
 
-  emptyContainer: {
-    flex: 1,
+  emptyCartContainer: {
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    padding: 20,
+    marginTop: 16,
   },
-  emptyImage: { width: 110, height: 110, marginBottom: 16 },
-  emptyText: { fontSize: 18, fontWeight: "900" },
-  emptySubText: { marginTop: 6, color: "#666", textAlign: "center" },
-
-  emptyBtn: {
-    marginTop: 14,
-    backgroundColor: PRIMARY,
-    paddingVertical: 12,
-    paddingHorizontal: 18,
-    borderRadius: 12,
-  },
-  emptyBtnText: { color: "#fff", fontWeight: "900" },
+  emptyCartImage: { width: 80, height: 80, marginRight: 16 },
+  emptyCartText: { fontSize: 18, fontWeight: "bold" },
 
   summaryContainer: { padding: 16, borderTopWidth: 1, borderColor: "#ddd" },
   summaryRow: {
