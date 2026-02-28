@@ -1,4 +1,6 @@
+// src/services/FetchData.js
 import { useEffect, useRef, useState } from "react";
+import { apiFetch } from "../api/apiFetch";
 
 const isAbortError = (e) =>
   e?.name === "AbortError" ||
@@ -6,60 +8,60 @@ const isAbortError = (e) =>
     .toLowerCase()
     .includes("abort");
 
-const DataFetch = (url, options = {}) => {
-  const { keepPreviousData = true } = options;
+const stableStringify = (v) => {
+  try {
+    return JSON.stringify(v);
+  } catch {
+    return String(v);
+  }
+};
+
+/**
+ * DataFetch(pathOrUrl, options?)
+ * - pathOrUrl: "/api/items?..." OR full URL
+ * - options:
+ *    - keepPreviousData (default true)
+ *    - deps: extra dependencies array to force refetch (optional)
+ */
+export default function DataFetch(pathOrUrl, options = {}) {
+  const { keepPreviousData = true, deps = [] } = options;
 
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true); // أول تحميل فقط
-  const [refreshing, setRefreshing] = useState(false); // تحميل فوق بيانات موجودة
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
 
-  const lastUrlRef = useRef(null);
-  const lastJsonRef = useRef(null);
+  const lastResultKeyRef = useRef(null);
 
   useEffect(() => {
     let alive = true;
-    const controller = new AbortController();
 
     const hasData = Array.isArray(data) ? data.length > 0 : !!data;
-    const isFirstLoad = lastUrlRef.current === null;
 
-    // ✅ لا تعمل flicker: لو عندك بيانات، خليها refreshing بدل loading
-    if (isFirstLoad || !keepPreviousData || !hasData) {
-      setLoading(true);
-    } else {
-      setRefreshing(true);
-    }
+    if (!keepPreviousData || !hasData) setLoading(true);
+    else setRefreshing(true);
 
     setError(null);
 
     (async () => {
       try {
-        lastUrlRef.current = url;
+        // apiFetch رح يضيف BASE_URL لو أعطيته path
+        const json = await apiFetch(
+          pathOrUrl.startsWith("http")
+            ? pathOrUrl.replace(/^https?:\/\/[^/]+/, "")
+            : pathOrUrl,
+        );
 
-        const res = await fetch(url, {
-          signal: controller.signal,
-          headers: { Accept: "application/json" },
-        });
-
-        const json = await res.json().catch(() => null);
-
-        if (!res.ok) {
-          throw new Error(json?.error || `Request failed: ${res.status}`);
-        }
-
-        // ✅ قلل re-render: إذا نفس النتيجة رجعت لا تعمل setData
-        const sameAsBefore =
-          JSON.stringify(json) === JSON.stringify(lastJsonRef.current);
+        const nextKey = stableStringify(json);
+        const sameAsBefore = nextKey === lastResultKeyRef.current;
 
         if (alive && !sameAsBefore) {
-          lastJsonRef.current = json;
+          lastResultKeyRef.current = nextKey;
           setData(json);
         }
       } catch (e) {
-        // ✅ تجاهل Abort لأنه طبيعي أثناء البحث
         if (!alive || isAbortError(e)) return;
-        if (alive) setError(e);
+        setError(e);
       } finally {
         if (!alive) return;
         setLoading(false);
@@ -69,12 +71,9 @@ const DataFetch = (url, options = {}) => {
 
     return () => {
       alive = false;
-      controller.abort();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [url]);
+  }, [pathOrUrl, ...deps]);
 
   return { data, loading, refreshing, error };
-};
-
-export default DataFetch;
+}

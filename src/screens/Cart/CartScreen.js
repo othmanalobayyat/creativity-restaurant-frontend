@@ -1,59 +1,19 @@
-// src/screens/Cart/CartScreen.js
 import React, { useContext, useMemo, useCallback } from "react";
 import {
   View,
   Text,
   FlatList,
   StyleSheet,
-  Image,
   TouchableOpacity,
 } from "react-native";
+
 import { CartContext } from "../../context/CartContext";
 import AppHeader from "../../components/AppHeader";
 
+import EmptyCart from "./components/EmptyCart";
+import CartItem from "./components/CartItem";
+
 const PRIMARY = "#ff851b";
-
-const EmptyCart = ({ onGoHome }) => (
-  <View style={styles.emptyContainer}>
-    <Image
-      source={require("../assets/empty-cart.png")}
-      style={styles.emptyImage}
-    />
-    <Text style={styles.emptyText}>Your cart is empty</Text>
-    <Text style={styles.emptySubText}>
-      Add some tasty items from the menu 🍔🍕
-    </Text>
-
-    <TouchableOpacity style={styles.emptyBtn} onPress={onGoHome}>
-      <Text style={styles.emptyBtnText}>Browse menu</Text>
-    </TouchableOpacity>
-  </View>
-);
-
-const CartItem = ({ item, onDecrease, onIncrease }) => (
-  <View style={styles.product}>
-    <Image source={{ uri: item.image }} style={styles.itemImage} />
-
-    <View style={styles.itemDetails}>
-      <Text style={styles.itemName} numberOfLines={1}>
-        {item.name}
-      </Text>
-      <Text style={styles.itemPrice}>$ {Number(item.price).toFixed(2)}</Text>
-    </View>
-
-    <View style={styles.itemQuantity}>
-      <TouchableOpacity style={styles.quantityButton} onPress={onDecrease}>
-        <Text style={styles.quantityButtonText}>-</Text>
-      </TouchableOpacity>
-
-      <Text style={styles.quantityText}>{item.quantity}</Text>
-
-      <TouchableOpacity style={styles.quantityButton} onPress={onIncrease}>
-        <Text style={styles.quantityButtonText}>+</Text>
-      </TouchableOpacity>
-    </View>
-  </View>
-);
 
 export default function CartScreen({ navigation }) {
   const { cart, increaseQuantity, decreaseQuantity } = useContext(CartContext);
@@ -77,6 +37,7 @@ export default function CartScreen({ navigation }) {
   const renderItem = useCallback(
     ({ item }) => (
       <CartItem
+        styles={styles}
         item={item}
         onDecrease={() => decreaseQuantity(item.id)}
         onIncrease={() => increaseQuantity(item.id)}
@@ -92,7 +53,7 @@ export default function CartScreen({ navigation }) {
       <Text style={styles.title}>Cart</Text>
 
       {cart.length === 0 ? (
-        <EmptyCart onGoHome={goHome} />
+        <EmptyCart styles={styles} onGoHome={goHome} />
       ) : (
         <>
           <FlatList
@@ -164,7 +125,6 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
 
-  // ✅ هذا اللي ناقص وكان بكسر الشاشة
   itemImage: { width: 60, height: 60, borderRadius: 10, marginRight: 16 },
 
   itemDetails: { flex: 1 },

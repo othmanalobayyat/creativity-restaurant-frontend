@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BASE_URL } from "../../config/api";
-import { apiFetch } from "../../utils/apiFetch";
+import { apiFetch } from "../../api/apiFetch";
 
 const PROFILE_KEY = "APP_PROFILE";
 

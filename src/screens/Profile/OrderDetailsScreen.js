@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { BASE_URL } from "../../config/api";
-import { apiFetch } from "../../utils/apiFetch";
+import { apiFetch } from "../../api/apiFetch";
 
 export default function OrderDetailsScreen({ route }) {
   const orderId = route.params?.orderId;

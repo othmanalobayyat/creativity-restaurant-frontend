@@ -1,5 +1,5 @@
 // src/screens/Home/HomeScreen.js
-import React, { useCallback, useMemo, useState, useEffect } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import {
   View,
@@ -9,48 +9,41 @@ import {
   ActivityIndicator,
 } from "react-native";
 
-import Categories from "../../components/Categories";
 import AppHeader from "../../components/AppHeader";
 import ProductCard from "../../components/ProductCard";
 import SearchInput from "../../components/SearchInput";
+
+import Categories from "./components/Categories";
+import { useDebouncedValue } from "./hooks/useDebouncedValue";
+import { openProductDetail } from "./utils/homeNav";
 import DataFetch from "../../services/FetchData";
-import { BASE_URL } from "../../config/api";
+
+const PRIMARY = "#ff851b";
 
 export default function HomeScreen({ navigation }) {
   const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("0");
 
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearch(search), 350);
-    return () => clearTimeout(t);
-  }, [search]);
+  const debouncedSearch = useDebouncedValue(search, 350);
 
-  const url = useMemo(() => {
+  // ✅ path فقط (بدون BASE_URL)
+  const path = useMemo(() => {
     const s = encodeURIComponent(debouncedSearch || "");
-    return `${BASE_URL}/api/items?categoryId=${selectedCategory}&search=${s}`;
+    return `/api/items?categoryId=${selectedCategory}&search=${s}`;
   }, [debouncedSearch, selectedCategory]);
 
-  const { data, loading, error } = DataFetch(url);
+  const { data, loading, error } = DataFetch(path);
 
   const [favSyncKey, setFavSyncKey] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
-      setFavSyncKey((x) => x + 1); // ✅ كل ما ترجع للـ Home يحدث القلوب
+      setFavSyncKey((x) => x + 1); // يحدث القلوب لما ترجع للـ Home
     }, []),
   );
 
   const onOpenProduct = useCallback(
-    (item) => {
-      navigation.navigate("ProductDetail", {
-        itemId: item.id,
-        itemName: item.name,
-        itemPrice: item.price,
-        itemDescription: item.description,
-        itemImage: item.image,
-      });
-    },
+    (item) => openProductDetail(navigation, item),
     [navigation],
   );
 
@@ -64,7 +57,7 @@ export default function HomeScreen({ navigation }) {
 
       {loading ? (
         <View style={styles.centerBox}>
-          <ActivityIndicator size="large" color="#ff851b" />
+          <ActivityIndicator size="large" color={PRIMARY} />
           <Text style={styles.msg}>Loading items...</Text>
         </View>
       ) : error ? (
@@ -76,6 +69,7 @@ export default function HomeScreen({ navigation }) {
       ) : (
         <FlatList
           data={data}
+          keyExtractor={(item) => String(item.id)}
           renderItem={({ item }) => (
             <ProductCard
               item={{ ...item, image: `${item.image}?v=${item.id}` }}
@@ -83,9 +77,8 @@ export default function HomeScreen({ navigation }) {
               favSyncKey={favSyncKey}
             />
           )}
-          keyExtractor={(item) => String(item.id)}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 24, paddingTop: 6 }}
+          contentContainerStyle={styles.listContent}
           ListEmptyComponent={<Text style={styles.msg}>No items found.</Text>}
         />
       )}
@@ -95,6 +88,8 @@ export default function HomeScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fafafa" },
+
+  listContent: { paddingBottom: 24, paddingTop: 6 },
 
   centerBox: {
     paddingVertical: 28,

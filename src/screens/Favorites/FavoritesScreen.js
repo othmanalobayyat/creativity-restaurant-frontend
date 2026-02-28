@@ -1,76 +1,47 @@
 // src/screens/Favorites/FavoritesScreen.js
-import React, { useCallback, useMemo, useState } from "react";
-import { View, Text, StyleSheet, FlatList, Image } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
+import React, { useCallback } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  ActivityIndicator,
+} from "react-native";
 import AppHeader from "../../components/AppHeader";
-import mockData from "../../data/mockData";
 import ProductCard from "../../components/ProductCard";
-import { getFavoriteIds } from "../../utils/favoritesStorage";
+
+import EmptyFavorites from "./components/EmptyFavorites";
+import { useFavorites } from "./hooks/useFavorites";
+import { openProductFromFavorites } from "./utils/favoritesNav";
+
+const PRIMARY = "#ff851b";
 
 export default function FavoritesScreen({ navigation }) {
-  const [favoriteIds, setFavoriteIds] = useState([]);
+  const { favorites, loading, error, onFavChanged } = useFavorites();
 
-  useFocusEffect(
-    useCallback(() => {
-      let active = true;
-
-      (async () => {
-        const ids = await getFavoriteIds();
-        if (active) setFavoriteIds(ids);
-      })();
-
-      return () => {
-        active = false;
-      };
-    }, []),
-  );
-
-  const favorites = useMemo(() => {
-    const set = new Set(favoriteIds.map(String));
-    return mockData.filter((p) => set.has(String(p.id)));
-  }, [favoriteIds]);
-
-  // ✅ افتح ProductDetail اللي داخل HomeStack
   const onOpenProduct = useCallback(
-    (item) => {
-      navigation.navigate("HomeTab", {
-        screen: "ProductDetail",
-        params: {
-          itemId: item.id,
-          itemName: item.name,
-          itemPrice: item.price,
-          itemDescription: item.description,
-          itemImage: item.image,
-        },
-      });
-    },
+    (item) => openProductFromFavorites(navigation, item),
     [navigation],
   );
-
-  // ✅ هذا اللي بخلي الإزالة فورية من صفحة Favorites نفسها
-  const onFavChanged = useCallback((id, isNowFav) => {
-    if (!isNowFav) {
-      setFavoriteIds((prev) => prev.filter((x) => String(x) !== String(id)));
-    }
-  }, []);
 
   return (
     <View style={styles.container}>
       <AppHeader showLogo />
-
       <Text style={styles.title}>Favorites</Text>
 
-      {favorites.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Image
-            source={require("../assets/empty-favorites.png")}
-            style={styles.emptyImage}
-          />
-          <Text style={styles.emptyText}>No favorites yet</Text>
-          <Text style={styles.emptySubText}>
-            Tap ❤️ on any product to save it here.
+      {loading ? (
+        <View style={styles.centerBox}>
+          <ActivityIndicator size="large" color={PRIMARY} />
+          <Text style={styles.msg}>Loading favorites...</Text>
+        </View>
+      ) : error ? (
+        <View style={styles.centerBox}>
+          <Text style={styles.err}>
+            Error: {String(error.message || error)}
           </Text>
         </View>
+      ) : favorites.length === 0 ? (
+        <EmptyFavorites />
       ) : (
         <FlatList
           data={favorites}
@@ -83,6 +54,7 @@ export default function FavoritesScreen({ navigation }) {
             />
           )}
           showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 24, paddingTop: 6 }}
         />
       )}
     </View>
@@ -98,13 +70,16 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 8,
   },
-  emptyContainer: {
-    flex: 1,
+  centerBox: {
+    paddingVertical: 28,
     alignItems: "center",
     justifyContent: "center",
-    padding: 20,
   },
-  emptyImage: { width: 110, height: 110, marginBottom: 16 },
-  emptyText: { fontSize: 18, fontWeight: "bold" },
-  emptySubText: { marginTop: 6, color: "#666", textAlign: "center" },
+  msg: { marginTop: 10, textAlign: "center", color: "#666" },
+  err: {
+    marginTop: 10,
+    textAlign: "center",
+    color: "#d11a2a",
+    paddingHorizontal: 16,
+  },
 });

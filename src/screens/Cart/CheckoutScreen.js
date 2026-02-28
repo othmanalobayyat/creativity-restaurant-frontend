@@ -1,5 +1,3 @@
-// src/screens/Cart/CheckoutScreen.js
-import { BASE_URL } from "../../config/api";
 import React, {
   useMemo,
   useCallback,
@@ -11,15 +9,18 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   StatusBar,
   ScrollView,
   Alert,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import Icon from "react-native-vector-icons/MaterialIcons";
 import { CartContext } from "../../context/CartContext";
-import { apiFetch } from "../../utils/apiFetch";
+import { apiFetch } from "../../api/apiFetch";
+
+import CheckoutAddressSection from "./components/CheckoutAddressSection";
+import CheckoutItemsSection from "./components/CheckoutItemsSection";
+import CheckoutSummary from "./components/CheckoutSummary";
+import CheckoutConfirmButton from "./components/CheckoutConfirmButton";
 
 export default function CheckoutScreen({ route, navigation }) {
   const { clearCart } = useContext(CartContext);
@@ -27,7 +28,6 @@ export default function CheckoutScreen({ route, navigation }) {
 
   const [address, setAddress] = useState({ city: "", street: "" });
 
-  // ✅ هيدر داخلي (Navigation header) بدل AppHeader
   useLayoutEffect(() => {
     navigation.setOptions({
       title: "Checkout",
@@ -40,16 +40,14 @@ export default function CheckoutScreen({ route, navigation }) {
 
   const loadAddress = useCallback(async () => {
     try {
-      const res = await apiFetch(`${BASE_URL}/api/me/address`);
-      const json = await res.json();
-      if (!res.ok) throw new Error(json?.error || "Failed to load address");
-      setAddress({ city: json.city || "", street: json.street || "" });
+      const json = await apiFetch("/api/me/address");
+      setAddress({ city: json?.city || "", street: json?.street || "" });
     } catch (e) {
       console.log("Address load error:", e?.message || e);
+      setAddress({ city: "", street: "" });
     }
   }, []);
 
-  // ✅ أهم نقطة: ينعكس فورًا بعد ما ترجع من Address
   useFocusEffect(
     useCallback(() => {
       loadAddress();
@@ -74,23 +72,20 @@ export default function CheckoutScreen({ route, navigation }) {
         items: items.map((x) => ({ itemId: x.id, quantity: x.quantity })),
       };
 
-      const res = await apiFetch(`${BASE_URL}/api/orders`, {
+      const json = await apiFetch("/api/orders", {
         method: "POST",
         body: JSON.stringify(payload),
       });
 
-      const json = await res.json();
-      if (!res.ok) throw new Error(json?.error || "Order failed");
-
       clearCart?.();
       navigation.replace("OrderConfirmation", {
-        total: json.total,
+        total: Number(json?.total || totalPrice),
         itemsCount: items.length,
       });
     } catch (e) {
       Alert.alert("Error", String(e.message || e));
     }
-  }, [items, clearCart, navigation]);
+  }, [items, clearCart, navigation, totalPrice]);
 
   const confirmOrder = useCallback(() => {
     if (!items.length) {
@@ -99,7 +94,6 @@ export default function CheckoutScreen({ route, navigation }) {
     }
 
     const hasAddress = address.city.trim() && address.street.trim();
-
     if (!hasAddress) {
       Alert.alert(
         "Address required",
@@ -112,7 +106,6 @@ export default function CheckoutScreen({ route, navigation }) {
       return;
     }
 
-    // ✅ تأكيد العنوان دائمًا (حتى لو ما تغيّر)
     Alert.alert(
       "Confirm Address",
       `Deliver to:\n${address.city}, ${address.street}\n\nIs this correct?`,
@@ -126,78 +119,26 @@ export default function CheckoutScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* ✅ خليه يطابق الستايل القديم */}
       <StatusBar backgroundColor="#ff851b" barStyle="light-content" />
 
       <ScrollView>
-        <View style={styles.section}>
-          <View style={styles.headerRow}>
-            <Text style={styles.sectionTitle}>Address</Text>
-            <TouchableOpacity onPress={goToAddress}>
-              <Text style={styles.changeText}>change</Text>
-            </TouchableOpacity>
-          </View>
+        <CheckoutAddressSection
+          styles={styles}
+          address={address}
+          onChangePress={goToAddress}
+        />
 
-          <View style={styles.addressContainer}>
-            <View style={styles.logoAddressContainer}>
-              <Icon name="location-on" size={24} color="#ff851b" />
-              <View style={styles.addressDetails}>
-                <Text style={styles.addressText}>
-                  {address.city && address.street
-                    ? `${address.city}, ${address.street}`
-                    : "No saved address"}
-                </Text>
-              </View>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          {items.map((item) => {
-            const price = Number(item.price) || 0;
-            const qty = Number(item.quantity) || 0;
-            const line = price * qty;
-
-            return (
-              <View key={String(item.id)} style={styles.orderItem}>
-                <Text style={styles.itemName}>{item.name}</Text>
-                <Text style={styles.itemQuantity}>
-                  {qty} x $ {price.toFixed(2)} = $ {line.toFixed(2)}
-                </Text>
-              </View>
-            );
-          })}
-        </View>
+        <CheckoutItemsSection styles={styles} items={items} />
       </ScrollView>
 
-      <View style={styles.summaryContainer}>
-        <View style={styles.summaryRow}>
-          <Text style={styles.summaryText}>Item Total</Text>
-          <Text style={styles.summaryText}>$ {totalPrice.toFixed(2)}</Text>
-        </View>
-        <View style={styles.summaryRow}>
-          <Text style={styles.summaryText}>Discount</Text>
-          <Text style={styles.summaryText}>$ 0.00</Text>
-        </View>
-        <View style={styles.summaryRow}>
-          <Text style={styles.summaryText}>Delivery Fee</Text>
-          <Text style={styles.freeText}>Free</Text>
-        </View>
-        <View style={styles.totalRow}>
-          <Text style={styles.totalText}>Total</Text>
-          <Text style={styles.totalText}>$ {totalPrice.toFixed(2)}</Text>
-        </View>
-      </View>
+      <CheckoutSummary styles={styles} totalPrice={totalPrice} />
 
-      <TouchableOpacity style={styles.confirmButton} onPress={confirmOrder}>
-        <Text style={styles.confirmButtonText}>CONFIRM ORDER</Text>
-      </TouchableOpacity>
+      <CheckoutConfirmButton styles={styles} onPress={confirmOrder} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  // ✅ شلت marginTop لأنه اللي بخرب الأندرويد غالبًا
   container: { flex: 1 },
 
   section: {

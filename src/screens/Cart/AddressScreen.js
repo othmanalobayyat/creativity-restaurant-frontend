@@ -1,20 +1,12 @@
-// src/screens/Cart/AddressScreen.js
 import React, {
   useEffect,
   useState,
   useLayoutEffect,
   useCallback,
 } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
-  TouchableOpacity,
-  Alert,
-} from "react-native";
-import { BASE_URL } from "../../config/api";
-import { apiFetch } from "../../utils/apiFetch";
+import { StyleSheet, Alert } from "react-native";
+import { apiFetch } from "../../api/apiFetch";
+import AddressForm from "./components/AddressForm";
 
 export default function AddressScreen({ navigation }) {
   const [city, setCity] = useState("");
@@ -33,11 +25,9 @@ export default function AddressScreen({ navigation }) {
 
   const load = useCallback(async () => {
     try {
-      const res = await apiFetch(`${BASE_URL}/api/me/address`);
-      const json = await res.json();
-      if (!res.ok) throw new Error(json?.error || "Failed to load address");
-      setCity(json.city || "");
-      setStreet(json.street || "");
+      const json = await apiFetch("/api/me/address");
+      setCity(json?.city || "");
+      setStreet(json?.street || "");
     } catch (e) {
       Alert.alert("Error", String(e.message || e));
     }
@@ -47,41 +37,31 @@ export default function AddressScreen({ navigation }) {
     load();
   }, [load]);
 
-  const save = async () => {
+  const save = useCallback(async () => {
     try {
       setLoading(true);
-
-      const res = await apiFetch(`${BASE_URL}/api/me/address`, {
+      await apiFetch("/api/me/address", {
         method: "PUT",
         body: JSON.stringify({ city, street }),
       });
-
-      const json = await res.json();
-      if (!res.ok) throw new Error(json?.error || "Failed to save address");
-
-      // ✅ رجّع المستخدم فورًا، والـ Checkout رح يعمل reload بسبب useFocusEffect
       navigation.goBack();
     } catch (e) {
       Alert.alert("Error", String(e.message || e));
     } finally {
       setLoading(false);
     }
-  };
+  }, [city, street, navigation]);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>City</Text>
-      <TextInput style={styles.input} value={city} onChangeText={setCity} />
-
-      <Text style={styles.label}>Street</Text>
-      <TextInput style={styles.input} value={street} onChangeText={setStreet} />
-
-      <TouchableOpacity style={styles.button} onPress={save} disabled={loading}>
-        <Text style={styles.buttonText}>
-          {loading ? "Saving..." : "Save Address"}
-        </Text>
-      </TouchableOpacity>
-    </View>
+    <AddressForm
+      styles={styles}
+      city={city}
+      street={street}
+      onChangeCity={setCity}
+      onChangeStreet={setStreet}
+      onSave={save}
+      loading={loading}
+    />
   );
 }
 

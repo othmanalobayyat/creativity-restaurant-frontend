@@ -1,5 +1,11 @@
 // src/screens/Home/ProductDetailScreen.js
-import React, { useContext, useMemo, useCallback } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
   View,
   Text,
@@ -8,30 +14,96 @@ import {
   ScrollView,
   Alert,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import { CartContext } from "../../context/CartContext";
+import { apiFetch } from "../../api/apiFetch";
+
+const PRIMARY = "#ff851b";
+
+async function fetchItemById(itemId) {
+  return apiFetch(`/api/items/${encodeURIComponent(itemId)}`);
+}
 
 export default function ProductDetailScreen({ route }) {
   const { addToCart } = useContext(CartContext);
+  const itemId = route?.params?.itemId;
 
-  const { itemId, itemName, itemPrice, itemImage, itemDescription } =
-    route.params;
+  const [item, setItem] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState(null);
 
-  const item = useMemo(
-    () => ({
-      id: itemId,
-      name: itemName,
-      price: itemPrice,
-      image: itemImage,
-      description: itemDescription,
-    }),
-    [itemId, itemName, itemPrice, itemImage, itemDescription],
-  );
+  useEffect(() => {
+    let active = true;
+
+    (async () => {
+      setLoading(true);
+      setErr(null);
+
+      try {
+        const data = await fetchItemById(itemId);
+        if (active) setItem(data);
+      } catch (e) {
+        if (active) setErr(e);
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [itemId]);
+
+  const normalized = useMemo(() => {
+    if (!item) return null;
+    return {
+      id: item.id ?? item.item_id ?? itemId,
+      name: item.name ?? item.itemName ?? item.title ?? "Item",
+      price: item.price ?? item.itemPrice ?? 0,
+      image: item.image ?? item.itemImage ?? item.img ?? "",
+      description: item.description ?? item.itemDescription ?? "",
+    };
+  }, [item, itemId]);
 
   const handleAddToCart = useCallback(() => {
-    addToCart(item);
-    Alert.alert("Item Added", `1 ${item.name} added to cart!`);
-  }, [addToCart, item]);
+    if (!normalized) return;
+    addToCart(normalized);
+    Alert.alert("Item Added", `1 ${normalized.name} added to cart!`);
+  }, [addToCart, normalized]);
+
+  if (!itemId) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.errText}>Missing itemId</Text>
+      </View>
+    );
+  }
+
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color={PRIMARY} />
+        <Text style={styles.msg}>Loading item...</Text>
+      </View>
+    );
+  }
+
+  if (err) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.errText}>Error: {String(err.message || err)}</Text>
+      </View>
+    );
+  }
+
+  if (!normalized) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.errText}>Item not found</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView
@@ -41,16 +113,23 @@ export default function ProductDetailScreen({ route }) {
       <View style={styles.container}>
         <Text style={styles.title}>Item Details</Text>
 
-        <Image source={{ uri: item.image }} style={styles.image} />
+        {normalized.image ? (
+          <Image source={{ uri: normalized.image }} style={styles.image} />
+        ) : (
+          <View style={[styles.image, styles.imageFallback]}>
+            <Text style={{ color: "#666" }}>No image</Text>
+          </View>
+        )}
 
         <View style={styles.namePriceContainer}>
-          <Text style={styles.name}>{item.name}</Text>
-          <Text style={styles.price}>$ {Number(item.price).toFixed(2)}</Text>
+          <Text style={styles.name}>{normalized.name}</Text>
+          <Text style={styles.price}>
+            $ {Number(normalized.price).toFixed(2)}
+          </Text>
         </View>
 
-        <Text style={styles.description}>{item.description}</Text>
+        <Text style={styles.description}>{normalized.description}</Text>
 
-        {/* ✅ زر جديد احترافي */}
         <TouchableOpacity
           style={styles.addButton}
           activeOpacity={0.85}
@@ -65,12 +144,7 @@ export default function ProductDetailScreen({ route }) {
 
 const styles = StyleSheet.create({
   scrollContainer: { paddingBottom: 20 },
-
-  container: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 20,
-  },
+  container: { flex: 1, paddingHorizontal: 20, paddingTop: 20 },
 
   title: {
     fontSize: 24,
@@ -79,11 +153,11 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 
-  image: {
-    width: "100%",
-    height: 220,
-    borderRadius: 15,
-    marginBottom: 16,
+  image: { width: "100%", height: 220, borderRadius: 15, marginBottom: 16 },
+  imageFallback: {
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#f2f2f2",
   },
 
   namePriceContainer: {
@@ -96,11 +170,7 @@ const styles = StyleSheet.create({
 
   name: { fontSize: 18, fontWeight: "bold" },
 
-  price: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#ff851b",
-  },
+  price: { fontSize: 22, fontWeight: "bold", color: PRIMARY },
 
   description: {
     fontSize: 15,
@@ -110,9 +180,8 @@ const styles = StyleSheet.create({
     color: "#444",
   },
 
-  /* 🔥 الزر الجديد */
   addButton: {
-    backgroundColor: "#ff851b",
+    backgroundColor: PRIMARY,
     height: 50,
     borderRadius: 25,
     justifyContent: "center",
@@ -124,9 +193,14 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
 
-  addButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
+  addButtonText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
+
+  center: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 24,
   },
+  msg: { marginTop: 10, color: "#666" },
+  errText: { color: "#d11a2a", textAlign: "center" },
 });

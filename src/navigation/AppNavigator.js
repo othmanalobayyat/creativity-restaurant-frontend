@@ -1,182 +1,75 @@
-import React, { useContext } from "react";
+// src/navigation/AppNavigator.js
+import React, { useContext, useMemo } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Icon from "react-native-vector-icons/FontAwesome";
-import { Platform } from "react-native";
 import { CartContext } from "../context/CartContext";
+import { tabBarOptions, COLORS } from "./theme/navigationTheme";
 
-// screens
-import HomeScreen from "../screens/Home/HomeScreen";
-import ProductDetailScreen from "../screens/Home/ProductDetailScreen";
-import CheckoutScreen from "../screens/Cart/CheckoutScreen";
-import CartScreen from "../screens/Cart/CartScreen";
-import OrderConfirmationScreen from "../screens/Cart/OrderConfirmationScreen";
-import AddressScreen from "../screens/Cart/AddressScreen";
-import ProfileScreen from "../screens/Profile/ProfileScreen";
-import ManageProfileScreen from "../screens/Profile/ManageProfileScreen";
-import ChangePasswordScreen from "../screens/Profile/ChangePasswordScreen";
-import AllMyOrdersScreen from "../screens/Profile/AllMyOrdersScreen";
-import OrderDetailsScreen from "../screens/Profile/OrderDetailsScreen";
-import FavoritesScreen from "../screens/Favorites/FavoritesScreen";
+// stacks
+import HomeStack from "./stacks/HomeStack";
+import CartStack from "./stacks/CartStack";
+import ProfileStack from "./stacks/ProfileStack";
+import FavoritesStack from "./stacks/FavoritesStack";
 
 const Tab = createBottomTabNavigator();
-const Stack = createNativeStackNavigator();
 
-function HomeStack() {
-  return (
-    <Stack.Navigator
-      screenOptions={{
-        headerStyle: { backgroundColor: "#ff851b" },
-        headerTintColor: "#fff",
-        headerTitleStyle: { fontWeight: "bold" },
-        headerBackTitleVisible: false,
-
-        // ✅ يثبت لون المنطقة اللي فوق على Android
-        statusBarStyle: "light",
-        statusBarColor: "#ff851b",
-        statusBarTranslucent: Platform.OS === "android" ? false : undefined,
-      }}
-    >
-      <Stack.Screen
-        name="Home"
-        component={HomeScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="ProductDetail"
-        component={ProductDetailScreen}
-        options={{ title: "Product Detail" }}
-      />
-    </Stack.Navigator>
-  );
-}
-
-function CartStack() {
-  return (
-    <Stack.Navigator>
-      <Stack.Screen
-        name="Cart"
-        component={CartScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="Checkout"
-        component={CheckoutScreen}
-        options={{
-          title: "Checkout",
-          headerStyle: { backgroundColor: "#ff851b" },
-          headerTintColor: "#ffffff",
-        }}
-      />
-      <Stack.Screen
-        name="OrderConfirmation"
-        component={OrderConfirmationScreen}
-        options={{
-          title: "Confirmation",
-          headerStyle: { backgroundColor: "#ff851b" },
-          headerTintColor: "#fff",
-        }}
-      />
-
-      <Stack.Screen
-        name="Address"
-        component={AddressScreen}
-        options={{
-          title: "Address",
-          headerStyle: { backgroundColor: "#ff851b" },
-          headerTintColor: "#fff",
-        }}
-      />
-    </Stack.Navigator>
-  );
-}
-
-function ProfileStack() {
-  return (
-    <Stack.Navigator>
-      <Stack.Screen
-        name="Profile"
-        component={ProfileScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="ManageProfile"
-        component={ManageProfileScreen}
-        options={{
-          title: "Manage Profile",
-          headerStyle: { backgroundColor: "#ff851b" },
-        }}
-      />
-      <Stack.Screen
-        name="ChangePassword"
-        component={ChangePasswordScreen}
-        options={{
-          title: "Change Your Password",
-          headerStyle: { backgroundColor: "#ff851b" },
-        }}
-      />
-      <Stack.Screen
-        name="AllMyOrders"
-        component={AllMyOrdersScreen}
-        options={{
-          title: "All My Orders",
-          headerStyle: { backgroundColor: "#ff851b" },
-        }}
-      />
-      <Stack.Screen
-        name="OrderDetails"
-        component={OrderDetailsScreen}
-        options={{
-          title: "Order Details",
-          headerStyle: { backgroundColor: "#ff851b" },
-        }}
-      />
-    </Stack.Navigator>
-  );
-}
+const TAB_ICONS = {
+  HomeTab: "home",
+  CartTab: "shopping-cart",
+  FavoritesTab: "heart",
+  ProfileTab: "user",
+};
 
 export default function AppNavigator() {
   const { cart } = useContext(CartContext);
 
+  const cartBadge = useMemo(() => {
+    return cart?.length ? cart.length : undefined;
+  }, [cart?.length]);
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        tabBarIcon: ({ color, size }) => {
-          let iconName = "circle";
-          if (route.name === "HomeTab") iconName = "home";
-          if (route.name === "CartTab") iconName = "shopping-cart";
-          if (route.name === "ProfileTab") iconName = "user";
-          if (route.name === "Favorites") iconName = "heart";
-          return <Icon name={iconName} size={size} color={color} />;
-        },
-        tabBarActiveTintColor: "tomato",
-        tabBarInactiveTintColor: "gray",
+        ...tabBarOptions,
+        headerShown: false,
+        tabBarIcon: ({ color, size }) => (
+          <Icon
+            name={TAB_ICONS[route.name] || "circle"}
+            size={size}
+            color={color}
+          />
+        ),
       })}
     >
       <Tab.Screen
         name="HomeTab"
         component={HomeStack}
-        options={{ headerShown: false, title: "Home" }}
+        options={{ title: "Home" }}
       />
+
       <Tab.Screen
         name="CartTab"
         component={CartStack}
         options={{
-          headerShown: false,
           title: "Cart",
-          tabBarBadge: cart?.length ? cart.length : undefined,
-          tabBarBadgeStyle: { backgroundColor: "#ff851b", color: "white" },
+          tabBarBadge: cartBadge,
+          tabBarBadgeStyle: {
+            backgroundColor: COLORS.primary,
+            color: COLORS.white,
+          },
         }}
       />
+
       <Tab.Screen
-        name="Favorites"
-        component={FavoritesScreen}
-        options={{ headerShown: false, title: "Favorites" }}
+        name="FavoritesTab"
+        component={FavoritesStack}
+        options={{ title: "Favorites" }}
       />
+
       <Tab.Screen
         name="ProfileTab"
         component={ProfileStack}
-        options={{ headerShown: false, title: "Profile" }}
+        options={{ title: "Profile" }}
       />
     </Tab.Navigator>
   );

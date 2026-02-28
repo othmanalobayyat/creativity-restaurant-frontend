@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { BASE_URL } from "../../config/api";
-import { apiFetch } from "../../utils/apiFetch";
+import { apiFetch } from "../../api/apiFetch";
 
 export default function ChangePasswordScreen({ navigation }) {
   const [currentPassword, setCurrentPassword] = useState("");

@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import AppHeader from "../../components/AppHeader";
 import { BASE_URL } from "../../config/api";
-import { apiFetch } from "../../utils/apiFetch";
+import { apiFetch } from "../../api/apiFetch";
 
 export default function AllMyOrdersScreen({ navigation }) {
   const [orders, setOrders] = useState([]);
