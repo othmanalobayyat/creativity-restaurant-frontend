@@ -8,7 +8,6 @@ import {
   Image,
   ActivityIndicator,
 } from "react-native";
-import { BASE_URL } from "../../config/api";
 import { apiFetch } from "../../api/apiFetch";
 
 export default function OrderDetailsScreen({ route }) {
@@ -21,26 +20,31 @@ export default function OrderDetailsScreen({ route }) {
   useEffect(() => {
     if (!orderId) return;
 
+    let active = true;
+
     (async () => {
       try {
         setLoading(true);
         setErr("");
 
-        // ✅ الصح: تفاصيل الطلب
-        const res = await apiFetch(`${BASE_URL}/api/orders/${orderId}`);
-        const json = await res.json();
+        const json = await apiFetch(
+          `/api/orders/${encodeURIComponent(orderId)}`,
+        );
 
-        if (!res.ok) throw new Error(json?.error || "Failed to load order");
-
-        // المتوقع: { order: {...}, items: [...] }
-        setData(json);
+        if (active) setData(json);
       } catch (e) {
-        setErr(String(e.message || e));
-        setData(null);
+        if (active) {
+          setErr(String(e.message || e));
+          setData(null);
+        }
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     })();
+
+    return () => {
+      active = false;
+    };
   }, [orderId]);
 
   if (!orderId) {

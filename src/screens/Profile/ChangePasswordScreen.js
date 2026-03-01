@@ -1,3 +1,4 @@
+// src/screens/Profile/ChangePasswordScreen.js
 import React, { useState, useCallback } from "react";
 import {
   View,
@@ -8,7 +9,6 @@ import {
   Alert,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
-import { BASE_URL } from "../../config/api";
 import { apiFetch } from "../../api/apiFetch";
 
 export default function ChangePasswordScreen({ navigation }) {
@@ -33,14 +33,10 @@ export default function ChangePasswordScreen({ navigation }) {
       );
 
     try {
-      const res = await apiFetch(`${BASE_URL}/api/auth/change-password`, {
+      await apiFetch("/api/auth/change-password", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ currentPassword, newPassword }),
       });
-
-      const json = await res.json();
-      if (!res.ok) throw new Error(json?.error || "Change password failed");
 
       Alert.alert("Success", "Password changed successfully.");
       navigation.goBack();
@@ -79,6 +75,7 @@ export default function ChangePasswordScreen({ navigation }) {
       <TouchableOpacity
         onPress={handlePasswordChange}
         style={styles.changeButton}
+        activeOpacity={0.9}
       >
         <Text style={styles.changeButtonText}>CHANGE PASSWORD</Text>
       </TouchableOpacity>

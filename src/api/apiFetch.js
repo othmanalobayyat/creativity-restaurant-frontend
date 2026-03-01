@@ -3,8 +3,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { TOKEN_KEY } from "../config/storageKeys";
 import { BASE_URL } from "../config/api";
 
-export async function apiFetch(path, options = {}) {
+export async function apiFetch(pathOrUrl, options = {}) {
   const token = await AsyncStorage.getItem(TOKEN_KEY);
+
+  const url = /^https?:\/\//.test(pathOrUrl)
+    ? pathOrUrl
+    : `${BASE_URL}${pathOrUrl.startsWith("/") ? "" : "/"}${pathOrUrl}`;
 
   const headers = {
     Accept: "application/json",
@@ -13,25 +17,24 @@ export async function apiFetch(path, options = {}) {
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 
-  const res = await fetch(`${BASE_URL}${path}`, {
-    ...options,
-    headers,
-  });
+  const res = await fetch(url, { ...options, headers });
 
-  const text = await res.text();
-  let data = null;
-
+  const text = await res.text().catch(() => "");
+  let json = null;
   try {
-    data = text ? JSON.parse(text) : null;
+    json = text ? JSON.parse(text) : null;
   } catch {
-    data = text;
+    json = null;
   }
 
   if (!res.ok) {
     const msg =
-      data?.message || data?.error || `Request failed (${res.status})`;
+      json?.error ||
+      json?.message ||
+      (text && text.slice(0, 120)) ||
+      `Request failed: ${res.status}`;
     throw new Error(msg);
   }
 
-  return data;
+  return json;
 }

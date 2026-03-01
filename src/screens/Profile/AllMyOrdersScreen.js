@@ -1,30 +1,24 @@
-import React, { useEffect, useState } from "react";
+// src/screens/Profile/AllMyOrdersScreen.js
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
   StyleSheet,
   FlatList,
   TouchableOpacity,
-  StatusBar,
 } from "react-native";
-import AppHeader from "../../components/AppHeader";
-import { BASE_URL } from "../../config/api";
 import { apiFetch } from "../../api/apiFetch";
 
 export default function AllMyOrdersScreen({ navigation }) {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const loadOrders = async () => {
+  const loadOrders = useCallback(async () => {
     try {
       setLoading(true);
 
-      const res = await apiFetch(`${BASE_URL}/api/me/orders`);
-      const json = await res.json();
+      const json = await apiFetch("/api/me/orders");
 
-      if (!res.ok) throw new Error(json?.error || "Failed to load orders");
-
-      // بعض السيرفرات بترجع { orders: [...] } بدل [...]
       const list = Array.isArray(json)
         ? json
         : Array.isArray(json?.orders)
@@ -33,16 +27,16 @@ export default function AllMyOrdersScreen({ navigation }) {
 
       setOrders(list);
     } catch (e) {
-      console.log("Orders load error:", e.message);
+      console.log("Orders load error:", e?.message || e);
       setOrders([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadOrders();
-  }, []);
+  }, [loadOrders]);
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
@@ -84,7 +78,11 @@ export default function AllMyOrdersScreen({ navigation }) {
         />
       )}
 
-      <TouchableOpacity style={styles.refreshBtn} onPress={loadOrders}>
+      <TouchableOpacity
+        style={styles.refreshBtn}
+        onPress={loadOrders}
+        activeOpacity={0.9}
+      >
         <Text style={styles.refreshText}>Refresh</Text>
       </TouchableOpacity>
     </View>
@@ -93,9 +91,7 @@ export default function AllMyOrdersScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16 },
-
   title: { fontSize: 22, fontWeight: "bold", marginBottom: 12 },
-
   msg: { textAlign: "center", marginTop: 30, color: "#666" },
 
   card: {
@@ -128,7 +124,6 @@ const styles = StyleSheet.create({
   },
 
   line: { marginBottom: 4, color: "#333" },
-
   date: { marginTop: 6, color: "#777", fontSize: 12 },
 
   refreshBtn: {

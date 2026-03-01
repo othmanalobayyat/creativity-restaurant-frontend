@@ -9,11 +9,8 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { BASE_URL } from "../../config/api";
 import { apiFetch } from "../../api/apiFetch";
-
-const PROFILE_KEY = "APP_PROFILE";
+import { loadProfileLocal, saveProfileLocal } from "./utils/profileStorage";
 
 export default function ManageProfileScreen({ navigation }) {
   const [fullName, setFullName] = useState("");
@@ -23,50 +20,39 @@ export default function ManageProfileScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const loadLocal = useCallback(async () => {
-    const raw = await AsyncStorage.getItem(PROFILE_KEY);
-    if (raw) {
-      const p = JSON.parse(raw);
-      setFullName(p?.fullName || "");
-      setPhone(p?.phone || "");
-      setEmail(p?.email || "");
-    }
+  const applyProfile = useCallback((p) => {
+    setFullName(p?.fullName || "");
+    setPhone(p?.phone || "");
+    setEmail(p?.email || "");
   }, []);
 
+  const load = useCallback(async () => {
+    try {
+      setLoading(true);
+
+      // 1) server
+      const json = await apiFetch("/api/me");
+
+      const p = {
+        fullName: json.fullName || json.name || "",
+        phone: json.phone || "",
+        email: json.email || "",
+      };
+
+      applyProfile(p);
+      await saveProfileLocal(p);
+    } catch {
+      // 2) local fallback
+      const local = await loadProfileLocal();
+      if (local) applyProfile(local);
+    } finally {
+      setLoading(false);
+    }
+  }, [applyProfile]);
+
   useEffect(() => {
-    (async () => {
-      try {
-        setLoading(true);
-
-        // 1) حاول من السيرفر
-        const res = await apiFetch(`${BASE_URL}/api/me`);
-        const json = await res.json();
-
-        if (res.ok && json) {
-          setFullName(json.fullName || json.name || "");
-          setPhone(json.phone || "");
-          setEmail(json.email || "");
-
-          // خزن نسخة احتياط محلياً
-          await AsyncStorage.setItem(
-            PROFILE_KEY,
-            JSON.stringify({
-              fullName: json.fullName || json.name || "",
-              phone: json.phone || "",
-              email: json.email || "",
-            }),
-          );
-        } else {
-          // 2) لو فشل: استخدم المحلي
-          await loadLocal();
-        }
-      } catch {
-        await loadLocal();
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [loadLocal]);
+    load();
+  }, [load]);
 
   const save = useCallback(async () => {
     const payload = {
@@ -90,24 +76,18 @@ export default function ManageProfileScreen({ navigation }) {
     try {
       setSaving(true);
 
-      // 1) جرّب حفظ على السيرفر
-      const res = await apiFetch(`${BASE_URL}/api/me`, {
+      // server save
+      await apiFetch("/api/me", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(json?.error || "Failed to save profile");
-
-      // 2) خزّن محلياً (backup)
-      await AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(payload));
-
+      await saveProfileLocal(payload);
       Alert.alert("Saved", "Profile updated successfully ✅");
       navigation.goBack();
     } catch (e) {
-      // حتى لو السيرفر فشل، خلّيه يشتغل محلياً
-      await AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(payload));
+      // local fallback
+      await saveProfileLocal(payload);
       Alert.alert(
         "Saved locally",
         "Server update failed, but profile saved on device ✅",

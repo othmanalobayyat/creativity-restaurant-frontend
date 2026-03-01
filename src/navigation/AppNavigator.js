@@ -4,12 +4,14 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { CartContext } from "../context/CartContext";
 import { tabBarOptions, COLORS } from "./theme/navigationTheme";
+import { useAuth } from "../context/AuthContext";
 
 // stacks
 import HomeStack from "./stacks/HomeStack";
 import CartStack from "./stacks/CartStack";
 import ProfileStack from "./stacks/ProfileStack";
 import FavoritesStack from "./stacks/FavoritesStack";
+import AdminStack from "./stacks/AdminStack";
 
 const Tab = createBottomTabNavigator();
 
@@ -18,11 +20,13 @@ const TAB_ICONS = {
   CartTab: "shopping-cart",
   FavoritesTab: "heart",
   ProfileTab: "user",
+  AdminTab: "cogs",
 };
 
 export default function AppNavigator() {
   const { cart } = useContext(CartContext);
-
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
   const cartBadge = useMemo(() => {
     return cart?.length ? cart.length : undefined;
   }, [cart?.length]);
@@ -66,6 +70,13 @@ export default function AppNavigator() {
         options={{ title: "Favorites" }}
       />
 
+      {isAdmin && (
+        <Tab.Screen
+          name="AdminTab"
+          component={AdminStack}
+          options={{ title: "Admin" }}
+        />
+      )}
       <Tab.Screen
         name="ProfileTab"
         component={ProfileStack}
