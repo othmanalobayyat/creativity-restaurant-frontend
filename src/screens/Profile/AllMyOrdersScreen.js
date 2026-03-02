@@ -9,6 +9,15 @@ import {
 } from "react-native";
 import { apiFetch } from "../../api/apiFetch";
 
+const STATUS_STYLES = {
+  PENDING: { bg: "#f0ad4e", text: "#fff" },
+  PROCESSING: { bg: "#5bc0de", text: "#fff" },
+  DELIVERY: { bg: "#6f42c1", text: "#fff" },
+  DELIVERED: { bg: "#17a2b8", text: "#fff" },
+  COMPLETED: { bg: "#28a745", text: "#fff" },
+  REJECTED: { bg: "#dc3545", text: "#fff" },
+};
+
 export default function AllMyOrdersScreen({ navigation }) {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -38,28 +47,39 @@ export default function AllMyOrdersScreen({ navigation }) {
     loadOrders();
   }, [loadOrders]);
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.card}
-      activeOpacity={0.85}
-      onPress={() => navigation.navigate("OrderDetails", { orderId: item.id })}
-    >
-      <View style={styles.rowBetween}>
-        <Text style={styles.orderTitle}>Order #{item.id}</Text>
-        <Text style={styles.status}>{String(item.status)}</Text>
-      </View>
+  const renderItem = ({ item }) => {
+    const st = STATUS_STYLES[item.status] || STATUS_STYLES.PENDING;
 
-      <Text style={styles.line}>
-        Total: $ {Number(item.total || 0).toFixed(2)}
-      </Text>
+    return (
+      <TouchableOpacity
+        style={styles.card}
+        activeOpacity={0.85}
+        onPress={() =>
+          navigation.navigate("OrderDetails", { orderId: item.id })
+        }
+      >
+        <View style={styles.rowBetween}>
+          <Text style={styles.orderTitle}>Order #{item.id}</Text>
 
-      <Text style={styles.line}>
-        Address: {item.city || "-"}, {item.street || "-"}
-      </Text>
+          <Text
+            style={[styles.status, { backgroundColor: st.bg, color: st.text }]}
+          >
+            {String(item.status || "-")}
+          </Text>
+        </View>
 
-      <Text style={styles.date}>{String(item.created_at || "")}</Text>
-    </TouchableOpacity>
-  );
+        <Text style={styles.line}>
+          Total: $ {Number(item.total || 0).toFixed(2)}
+        </Text>
+
+        <Text style={styles.line}>
+          Address: {item.city || "-"}, {item.street || "-"}
+        </Text>
+
+        <Text style={styles.date}>{String(item.created_at || "")}</Text>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -113,8 +133,6 @@ const styles = StyleSheet.create({
   orderTitle: { fontSize: 16, fontWeight: "bold" },
 
   status: {
-    backgroundColor: "#ff851b",
-    color: "#fff",
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 10,
