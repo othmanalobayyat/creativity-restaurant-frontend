@@ -1,3 +1,4 @@
+// src/screens/Admin/AdminProductFormScreen.js
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   View,
@@ -11,11 +12,13 @@ import {
   ScrollView,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import * as ImageManipulator from "expo-image-manipulator";
+
+import { uploadToCloudinaryUnsigned } from "../../api/cloudinaryUpload";
 import {
   createAdminProduct,
   updateAdminProduct,
   fetchAdminCategories,
-  uploadAdminImage,
 } from "../../api/adminApi";
 
 const PRIMARY = "#ff851b";
@@ -31,7 +34,6 @@ export default function AdminProductFormScreen({ navigation, route }) {
   const product = route?.params?.product || null;
   const isEdit = mode === "edit";
 
-  const [id, setId] = useState(isEdit ? String(product?.id ?? "") : "");
   const [name, setName] = useState(isEdit ? String(product?.name ?? "") : "");
   const [price, setPrice] = useState(
     isEdit ? String(product?.price ?? "") : "",
@@ -68,7 +70,7 @@ export default function AdminProductFormScreen({ navigation, route }) {
         const rows = await fetchAdminCategories("");
         setCategories(Array.isArray(rows) ? rows : []);
         if (!isEdit && !categoryId && Array.isArray(rows) && rows.length) {
-          setCategoryId(String(rows[0].id)); // default أول تصنيف
+          setCategoryId(String(rows[0].id));
         }
       } catch {
         setCategories([]);
@@ -79,11 +81,11 @@ export default function AdminProductFormScreen({ navigation, route }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ✅ pick + compress + upload (DIRECT TO CLOUDINARY)
   const pickImage = useCallback(async () => {
     try {
-      const { status } =
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== "granted") {
+      const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (perm.status !== "granted") {
         return Alert.alert(
           "Permission",
           "We need photo permission to pick images.",
@@ -92,27 +94,40 @@ export default function AdminProductFormScreen({ navigation, route }) {
 
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 0.8,
-        base64: true,
         allowsEditing: true,
         aspect: [1, 1],
+        quality: 1,
+        base64: false,
       });
 
       if (result.canceled) return;
 
       const asset = result.assets?.[0];
-      if (!asset?.base64) {
-        return Alert.alert("Error", "Failed to read image as base64");
+      if (!asset?.uri) {
+        return Alert.alert("Error", "No image selected");
       }
 
-      // Preview محلي سريع
-      const dataUrl = `data:image/jpeg;base64,${asset.base64}`;
-
       setUploading(true);
-      const up = await uploadAdminImage(dataUrl); // { ok, url }
-      if (!up?.url) throw new Error("Upload failed (no url)");
 
-      setImageUrl(up.url);
+      // ✅ compress/resize + convert to JPEG (fix HEIC)
+      const manipulated = await ImageManipulator.manipulateAsync(
+        asset.uri,
+        [{ resize: { width: 900 } }],
+        {
+          compress: 0.7,
+          format: ImageManipulator.SaveFormat.JPEG,
+          base64: true,
+        },
+      );
+
+      if (!manipulated?.base64) {
+        throw new Error("Failed to process image");
+      }
+
+      const dataUrl = `data:image/jpeg;base64,${manipulated.base64}`;
+
+      const url = await uploadToCloudinaryUnsigned(dataUrl);
+      setImageUrl(url);
     } catch (e) {
       Alert.alert("Upload Error", String(e?.message || e));
     } finally {
@@ -124,22 +139,17 @@ export default function AdminProductFormScreen({ navigation, route }) {
     const trimmedName = name.trim();
     if (!trimmedName) return "Name is required";
 
-    if (!isEdit) {
-      const nid = toNumberOrNull(id);
-      if (!nid || nid <= 0) return "ID must be a positive number";
-    }
-
     const p = toNumberOrNull(price);
     if (p == null || p < 0) return "Price must be a valid number >= 0";
 
-    const q = toNumberOrNull(quantity);
-    if (q == null || q < 0) return "Quantity must be a number >= 0";
+    const qn = toNumberOrNull(quantity);
+    if (qn == null || qn < 0) return "Quantity must be a number >= 0";
 
     const cid = toNumberOrNull(categoryId);
     if (!cid || cid <= 0) return "Category is required";
 
     return null;
-  }, [name, id, price, quantity, categoryId, isEdit]);
+  }, [name, price, quantity, categoryId]);
 
   const submit = useCallback(async () => {
     try {
@@ -147,8 +157,6 @@ export default function AdminProductFormScreen({ navigation, route }) {
       if (err) return Alert.alert("Validation", err);
 
       const body = {
-        // create needs id, edit uses params id
-        ...(isEdit ? {} : { id: Number(id) }),
         name: name.trim(),
         price: Number(price),
         quantity: Math.max(0, Math.floor(Number(quantity || 0))),
@@ -162,6 +170,7 @@ export default function AdminProductFormScreen({ navigation, route }) {
       if (isEdit) {
         await updateAdminProduct(Number(product.id), body);
       } else {
+        // ✅ NO id here (AUTO_INCREMENT)
         await createAdminProduct(body);
       }
 
@@ -176,7 +185,6 @@ export default function AdminProductFormScreen({ navigation, route }) {
   }, [
     validate,
     isEdit,
-    id,
     name,
     price,
     quantity,
@@ -193,22 +201,6 @@ export default function AdminProductFormScreen({ navigation, route }) {
       contentContainerStyle={{ paddingBottom: 24 }}
     >
       <Text style={s.title}>{title}</Text>
-
-      {!isEdit && (
-        <>
-          <Text style={s.label}>ID</Text>
-          <TextInput
-            value={id}
-            onChangeText={setId}
-            placeholder="مثلاً 101"
-            keyboardType="number-pad"
-            style={s.input}
-          />
-          <Text style={s.hint}>
-            لأن items.id عندك بدون AUTO_INCREMENT لازم تدخل ID.
-          </Text>
-        </>
-      )}
 
       <Text style={s.label}>Name</Text>
       <TextInput
@@ -327,7 +319,8 @@ export default function AdminProductFormScreen({ navigation, route }) {
       </TouchableOpacity>
 
       <Text style={s.note}>
-        ملاحظة: الرفع صار على Cloudinary، فـ upload المحلي مش ضروري للإنتاج.
+        ملاحظة: الرفع صار مباشرة على Cloudinary، و الـ ID صار Auto Increment من
+        قاعدة البيانات.
       </Text>
     </ScrollView>
   );
@@ -338,7 +331,6 @@ const s = StyleSheet.create({
   title: { fontSize: 20, fontWeight: "bold", marginBottom: 12 },
 
   label: { marginTop: 10, marginBottom: 6, color: "#444", fontWeight: "600" },
-  hint: { marginTop: 6, color: "#777", fontSize: 12, lineHeight: 18 },
 
   input: {
     backgroundColor: "#fff",
@@ -350,7 +342,6 @@ const s = StyleSheet.create({
   },
 
   row: { flexDirection: "row" },
-
   muted: { color: "#666" },
 
   chipsWrap: { flexDirection: "row", flexWrap: "wrap", gap: 8 },

@@ -3,7 +3,6 @@ import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { defaultStackOptions } from "../theme/navigationTheme";
 
-import AdminDashboardScreen from "../../screens/Admin/AdminDashboardScreen";
 import AdminProductsScreen from "../../screens/Admin/AdminProductsScreen";
 import AdminProductFormScreen from "../../screens/Admin/AdminProductFormScreen";
 import AdminCategoriesScreen from "../../screens/Admin/AdminCategoriesScreen";
@@ -19,11 +18,6 @@ export default function AdminStack() {
       <Stack.Screen
         name="AdminHome"
         component={AdminHomeScreen}
-        options={{ title: "Admin Home" }}
-      />
-      <Stack.Screen
-        name="AdminHome2"
-        component={AdminDashboardScreen}
         options={{ title: "Admin Dashboard" }}
       />
 
@@ -32,6 +26,7 @@ export default function AdminStack() {
         component={AdminProductsScreen}
         options={{ title: "Manage Products" }}
       />
+
       <Stack.Screen
         name="AdminProductForm"
         component={AdminProductFormScreen}
@@ -43,6 +38,7 @@ export default function AdminStack() {
         component={AdminCategoriesScreen}
         options={{ title: "Manage Categories" }}
       />
+
       <Stack.Screen
         name="AdminCategoryForm"
         component={AdminCategoryFormScreen}

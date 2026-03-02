@@ -1,3 +1,4 @@
+// src/screens/Admin/AdminCategoryFormScreen.js
 import React, { useCallback, useMemo, useState } from "react";
 import {
   View,
@@ -15,10 +16,8 @@ const PRIMARY = "#ff851b";
 export default function AdminCategoryFormScreen({ navigation, route }) {
   const mode = route?.params?.mode || "create";
   const category = route?.params?.category || null;
-
   const isEdit = mode === "edit";
 
-  const [id, setId] = useState(isEdit ? String(category?.id ?? "") : "");
   const [name, setName] = useState(isEdit ? String(category?.name ?? "") : "");
   const [saving, setSaving] = useState(false);
 
@@ -32,18 +31,13 @@ export default function AdminCategoryFormScreen({ navigation, route }) {
       const trimmed = name.trim();
       if (!trimmed) return Alert.alert("Validation", "Name is required");
 
-      if (!isEdit) {
-        const n = Number(id);
-        if (!Number.isFinite(n) || n <= 0)
-          return Alert.alert("Validation", "ID must be a positive number");
-      }
-
       setSaving(true);
 
       if (isEdit) {
         await updateAdminCategory(Number(category.id), { name: trimmed });
       } else {
-        await createAdminCategory({ id: Number(id), name: trimmed });
+        // ✅ NO id here (AUTO_INCREMENT)
+        await createAdminCategory({ name: trimmed });
       }
 
       Alert.alert("Success", "Saved ✅", [
@@ -54,24 +48,11 @@ export default function AdminCategoryFormScreen({ navigation, route }) {
     } finally {
       setSaving(false);
     }
-  }, [name, id, isEdit, category, navigation]);
+  }, [name, isEdit, category, navigation]);
 
   return (
     <View style={s.container}>
       <Text style={s.title}>{title}</Text>
-
-      {!isEdit && (
-        <>
-          <Text style={s.label}>ID</Text>
-          <TextInput
-            value={id}
-            onChangeText={setId}
-            placeholder="مثلاً 10"
-            keyboardType="number-pad"
-            style={s.input}
-          />
-        </>
-      )}
 
       <Text style={s.label}>Name</Text>
       <TextInput
@@ -86,8 +67,7 @@ export default function AdminCategoryFormScreen({ navigation, route }) {
       </TouchableOpacity>
 
       <Text style={s.note}>
-        ملاحظة: لأن جدول categories عندك بدون AUTO_INCREMENT، لازم تدخل ID وقت
-        الإضافة.
+        ملاحظة: الـ ID صار Auto Increment من قاعدة البيانات.
       </Text>
     </View>
   );
