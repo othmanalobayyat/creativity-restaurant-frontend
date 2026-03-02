@@ -1,5 +1,5 @@
 export async function uploadToCloudinaryUnsigned(base64DataUrl) {
-  const cloudName = "PUT_YOUR_CLOUD_NAME_HERE";
+  const cloudName = "dqmnndkp9";
   const uploadPreset = "creativity_products";
 
   const form = new FormData();
