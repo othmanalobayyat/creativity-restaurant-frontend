@@ -10,6 +10,7 @@ import {
   RefreshControl,
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
+import { formatDateSmart, TZ_MODE, DATE_FORMAT } from "../../utils/formatDate";
 import { fetchAdminDashboard } from "../../api/adminApi";
 
 const PRIMARY = "#ff851b";
@@ -92,16 +93,6 @@ export default function AdminHomeScreen({ navigation }) {
     ],
     [totals, byStatus, navigation],
   );
-  const formatIsoLocal = (raw) => {
-    if (!raw) return "-";
-    const d = new Date(raw);
-
-    // نحول للوقت المحلي بدون ما نغير الشكل
-    const offset = d.getTimezoneOffset() * 60000;
-    const local = new Date(d.getTime() - offset);
-
-    return local.toISOString().replace("Z", "");
-  };
 
   return (
     <ScrollView
@@ -227,7 +218,11 @@ export default function AdminHomeScreen({ navigation }) {
             </Text>
 
             <Text style={s.orderDate}>
-              {formatIsoLocal(o.created_at || o.createdAt)}
+              {formatDateSmart(o.created_at || o.createdAt, {
+                tzMode: TZ_MODE.FIXED,
+                format: DATE_FORMAT.ISO,
+              })}{" "}
+              {/* Asia/Jerusalem time if you want as admin, or USER for user's local time*/}
             </Text>
           </TouchableOpacity>
         ))
