@@ -49,7 +49,18 @@ export default function AllMyOrdersScreen({ navigation }) {
 
   const renderItem = ({ item }) => {
     const st = STATUS_STYLES[item.status] || STATUS_STYLES.PENDING;
-
+    const formatDate = (raw) => {
+      if (!raw) return "-";
+      const d = new Date(raw);
+      if (Number.isNaN(d.getTime())) return String(raw);
+      return d.toLocaleString("en-GB", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    };
     return (
       <TouchableOpacity
         style={styles.card}
@@ -76,7 +87,9 @@ export default function AllMyOrdersScreen({ navigation }) {
           Address: {item.city || "-"}, {item.street || "-"}
         </Text>
 
-        <Text style={styles.date}>{String(item.created_at || "")}</Text>
+        <Text style={styles.date}>
+          {formatDate(item.created_at || item.createdAt)}
+        </Text>
       </TouchableOpacity>
     );
   };

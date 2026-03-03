@@ -81,7 +81,16 @@ export default function OrderDetailsScreen({ route }) {
   }
 
   const { order, items } = data;
-
+  const rawDate = order.created_at || order.createdAt;
+  const formattedDate = rawDate
+    ? new Date(rawDate).toLocaleString("en-GB", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : "-";
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Order #{order.id}</Text>
@@ -94,9 +103,7 @@ export default function OrderDetailsScreen({ route }) {
         <Text style={styles.meta}>
           Address: {order.city || "-"}, {order.street || "-"}
         </Text>
-        <Text style={styles.meta}>
-          Date: {String(order.created_at || order.createdAt || "-")}
-        </Text>
+        <Text style={styles.meta}>Date: {formattedDate}</Text>
       </View>
 
       <Text style={styles.sub}>Items</Text>

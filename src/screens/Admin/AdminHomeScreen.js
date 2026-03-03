@@ -92,6 +92,16 @@ export default function AdminHomeScreen({ navigation }) {
     ],
     [totals, byStatus, navigation],
   );
+  const formatIsoLocal = (raw) => {
+    if (!raw) return "-";
+    const d = new Date(raw);
+
+    // نحول للوقت المحلي بدون ما نغير الشكل
+    const offset = d.getTimezoneOffset() * 60000;
+    const local = new Date(d.getTime() - offset);
+
+    return local.toISOString().replace("Z", "");
+  };
 
   return (
     <ScrollView
@@ -216,7 +226,9 @@ export default function AdminHomeScreen({ navigation }) {
               ${Number(o.total || 0).toFixed(2)} • {o.city}, {o.street}
             </Text>
 
-            <Text style={s.orderDate}>{String(o.created_at || "")}</Text>
+            <Text style={s.orderDate}>
+              {formatIsoLocal(o.created_at || o.createdAt)}
+            </Text>
           </TouchableOpacity>
         ))
       )}
