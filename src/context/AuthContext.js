@@ -1,4 +1,7 @@
 // src/context/AuthContext.js
+import { apiFetch } from "../api/apiFetch";
+import { saveProfileLocal } from "../screens/Profile/utils/profileStorage";
+import { clearProfileLocal } from "../screens/Profile/utils/profileStorage";
 import React, {
   createContext,
   useContext,
@@ -38,12 +41,26 @@ export function AuthProvider({ children }) {
   const login = useCallback(async ({ token: t, user: u }) => {
     await AsyncStorage.setItem(TOKEN_KEY, t);
     if (u) await AsyncStorage.setItem(USER_KEY, JSON.stringify(u));
+
     setToken(t);
     setUser(u || null);
+
+    try {
+      const me = await apiFetch("/api/me");
+
+      await saveProfileLocal({
+        fullName: me.fullName || me.name || "",
+        phone: me.phone || "",
+        email: me.email || "",
+      });
+    } catch (e) {
+      console.log("Profile fetch failed after login", e);
+    }
   }, []);
 
   const logout = useCallback(async () => {
     await AsyncStorage.multiRemove([TOKEN_KEY, USER_KEY]);
+    await clearProfileLocal(); // ✅ يمسح الاسم القديم
     setToken(null);
     setUser(null);
   }, []);

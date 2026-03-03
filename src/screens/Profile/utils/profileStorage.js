@@ -11,3 +11,7 @@ export async function loadProfileLocal() {
 export async function saveProfileLocal(profile) {
   await AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
 }
+
+export async function clearProfileLocal() {
+  await AsyncStorage.removeItem(PROFILE_KEY);
+}

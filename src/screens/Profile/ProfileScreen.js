@@ -13,6 +13,7 @@ import { CartContext } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext";
 
 import { useProfileLocal } from "./hooks/useProfileLocal";
+import { clearProfileLocal } from "./utils/profileStorage";
 import ProfileSection from "./components/ProfileSection";
 import ProfileRow from "./components/ProfileRow";
 import {
@@ -38,6 +39,7 @@ export default function ProfileScreen({ navigation }) {
         style: "destructive",
         onPress: async () => {
           clearCart?.();
+          await clearProfileLocal();
           await logout();
         },
       },
@@ -50,7 +52,9 @@ export default function ProfileScreen({ navigation }) {
 
       <View style={styles.contentContainer}>
         <Text style={styles.title}>Profile</Text>
-        <Text style={styles.subtitle}>Hi, {profileName}</Text>
+        <Text style={styles.subtitle}>
+          Hi, {profileName?.trim() ? profileName : "Guest"}
+        </Text>
 
         <ScrollView>
           <ProfileSection title="My Account">
@@ -103,7 +107,13 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   contentContainer: { flex: 1 },
   title: { fontSize: 24, fontWeight: "bold", marginLeft: 20, marginTop: 20 },
-  subtitle: { marginLeft: 20, marginTop: 6, color: "#666" },
+  subtitle: {
+    marginLeft: 20,
+    marginTop: 6,
+    fontSize: 18,
+    fontWeight: "666",
+    color: "#000",
+  },
 
   logoutContainer: { padding: 16 },
   logoutButton: {
