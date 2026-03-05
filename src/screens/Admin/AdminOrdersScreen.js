@@ -40,7 +40,7 @@ function normalizeOrders(json) {
   return [];
 }
 
-export default function AdminOrdersScreen({ route }) {
+export default function AdminOrdersScreen({ route, navigation }) {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
@@ -136,14 +136,28 @@ export default function AdminOrdersScreen({ route }) {
           <View style={styles.rowBetween}>
             <Text style={styles.title}>Order #{item.id}</Text>
 
-            <Text
-              style={[
-                styles.status,
-                { backgroundColor: st.bg, color: st.text },
-              ]}
-            >
-              {String(item.status || "-")}
-            </Text>
+            <View style={styles.rowRight}>
+              <Text
+                style={[
+                  styles.status,
+                  { backgroundColor: st.bg, color: st.text },
+                ]}
+              >
+                {String(item.status || "-")}
+              </Text>
+
+              <TouchableOpacity
+                style={styles.detailsBtn}
+                activeOpacity={0.85}
+                onPress={() =>
+                  navigation.navigate("AdminOrderDetails", {
+                    orderId: item.id,
+                  })
+                }
+              >
+                <Text style={styles.detailsText}>Details</Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
           <Text style={styles.line}>User: {String(item.user_id ?? "-")}</Text>
@@ -271,6 +285,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 8,
   },
+  rowRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
   title: { fontSize: 16, fontWeight: "bold" },
   status: {
     paddingHorizontal: 10,
@@ -279,6 +298,20 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     fontSize: 12,
     fontWeight: "bold",
+  },
+  detailsBtn: {
+    marginLeft: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    backgroundColor: "#fafafa",
+  },
+  detailsText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: PRIMARY,
   },
   line: { marginBottom: 4, color: "#333" },
   date: { marginTop: 6, color: "#777", fontSize: 12 },

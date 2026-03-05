@@ -7,8 +7,9 @@ import AdminProductsScreen from "../../screens/Admin/AdminProductsScreen";
 import AdminProductFormScreen from "../../screens/Admin/AdminProductFormScreen";
 import AdminCategoriesScreen from "../../screens/Admin/AdminCategoriesScreen";
 import AdminCategoryFormScreen from "../../screens/Admin/AdminCategoryFormScreen";
-import AdminOrdersScreen from "../../screens/Admin/AdminOrdersScreen";
 import AdminHomeScreen from "../../screens/Admin/AdminHomeScreen";
+import AdminOrdersScreen from "../../screens/Admin/AdminOrdersScreen";
+import AdminOrderDetailsScreen from "../../screens/Admin/AdminOrderDetailsScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -49,6 +50,12 @@ export default function AdminStack() {
         name="AdminOrders"
         component={AdminOrdersScreen}
         options={{ title: "Manage Orders" }}
+      />
+
+      <Stack.Screen
+        name="AdminOrderDetails"
+        component={AdminOrderDetailsScreen}
+        options={{ title: "Order Details" }}
       />
     </Stack.Navigator>
   );
