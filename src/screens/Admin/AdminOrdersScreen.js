@@ -11,7 +11,10 @@ import {
   Modal,
   Pressable,
 } from "react-native";
-import { apiFetch } from "../../api/apiFetch";
+import {
+  fetchAdminOrders,
+  updateAdminOrderStatus,
+} from "../../api/ordersApi";
 
 import { colors, spacing, radii } from "../../theme";
 import OrderStatusBadge, {
@@ -26,13 +29,6 @@ const STATUSES = [
   "COMPLETED",
   "REJECTED",
 ];
-
-function normalizeOrders(json) {
-  if (Array.isArray(json)) return json;
-  if (json && Array.isArray(json.orders)) return json.orders;
-  if (json && Array.isArray(json.data)) return json.data;
-  return [];
-}
 
 export default function AdminOrdersScreen({ route, navigation }) {
   const [orders, setOrders] = useState([]);
@@ -58,12 +54,7 @@ export default function AdminOrdersScreen({ route, navigation }) {
       setLoading(true);
       setErr("");
 
-      const qs = statusFilter
-        ? `?status=${encodeURIComponent(statusFilter)}`
-        : "";
-      const json = await apiFetch(`/api/admin/orders${qs}`);
-      const list = normalizeOrders(json);
-
+      const list = await fetchAdminOrders({ status: statusFilter });
       setOrders(list);
     } catch (e) {
       const msg = String(e?.message || e);
@@ -82,13 +73,7 @@ export default function AdminOrdersScreen({ route, navigation }) {
   const changeStatus = useCallback(
     async (orderId, nextStatus) => {
       try {
-        await apiFetch(
-          `/api/admin/orders/${encodeURIComponent(orderId)}/status`,
-          {
-            method: "PUT",
-            body: JSON.stringify({ status: nextStatus }),
-          },
-        );
+        await updateAdminOrderStatus(orderId, nextStatus);
         await load();
       } catch (e) {
         Alert.alert("Error", String(e?.message || e));

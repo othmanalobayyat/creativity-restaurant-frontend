@@ -7,7 +7,7 @@ import {
   FlatList,
   TouchableOpacity,
 } from "react-native";
-import { apiFetch } from "../../api/apiFetch";
+import { fetchMyOrders } from "../../api/ordersApi";
 import OrderStatusBadge from "../../components/OrderStatusBadge";
 
 export default function AllMyOrdersScreen({ navigation }) {
@@ -18,14 +18,7 @@ export default function AllMyOrdersScreen({ navigation }) {
     try {
       setLoading(true);
 
-      const json = await apiFetch("/api/me/orders");
-
-      const list = Array.isArray(json)
-        ? json
-        : Array.isArray(json?.orders)
-          ? json.orders
-          : [];
-
+      const list = await fetchMyOrders();
       setOrders(list);
     } catch (e) {
       console.log("Orders load error:", e?.message || e);

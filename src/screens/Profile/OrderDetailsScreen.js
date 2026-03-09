@@ -1,6 +1,6 @@
 // src/screens/Profile/OrderDetailsScreen.js
 import React, { useEffect, useState } from "react";
-import { apiFetch } from "../../api/apiFetch";
+import { fetchOrderById } from "../../api/ordersApi";
 import OrderDetailsView from "../../components/OrderDetailsView";
 
 export default function OrderDetailsScreen({ route }) {
@@ -20,9 +20,7 @@ export default function OrderDetailsScreen({ route }) {
         setLoading(true);
         setErr("");
 
-        const json = await apiFetch(
-          `/api/orders/${encodeURIComponent(orderId)}`,
-        );
+        const json = await fetchOrderById(orderId);
 
         if (active) setData(json);
       } catch (e) {
@@ -49,4 +47,3 @@ export default function OrderDetailsScreen({ route }) {
     />
   );
 }
-
