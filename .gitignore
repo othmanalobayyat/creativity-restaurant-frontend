@@ -38,3 +38,4 @@ yarn-error.*
 src/screens/Profile/deleteProfile.js
 src/screens/Profile/deleteProfile2.js
 src/screens/Auth/delte.js
+ai-prompts/
