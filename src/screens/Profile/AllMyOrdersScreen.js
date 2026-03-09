@@ -8,15 +8,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { apiFetch } from "../../api/apiFetch";
-
-const STATUS_STYLES = {
-  PENDING: { bg: "#f0ad4e", text: "#fff" },
-  PROCESSING: { bg: "#5bc0de", text: "#fff" },
-  DELIVERY: { bg: "#6f42c1", text: "#fff" },
-  DELIVERED: { bg: "#17a2b8", text: "#fff" },
-  COMPLETED: { bg: "#28a745", text: "#fff" },
-  REJECTED: { bg: "#dc3545", text: "#fff" },
-};
+import OrderStatusBadge from "../../components/OrderStatusBadge";
 
 export default function AllMyOrdersScreen({ navigation }) {
   const [orders, setOrders] = useState([]);
@@ -48,7 +40,6 @@ export default function AllMyOrdersScreen({ navigation }) {
   }, [loadOrders]);
 
   const renderItem = ({ item }) => {
-    const st = STATUS_STYLES[item.status] || STATUS_STYLES.PENDING;
     const formatDate = (raw) => {
       if (!raw) return "-";
       const d = new Date(raw);
@@ -72,11 +63,7 @@ export default function AllMyOrdersScreen({ navigation }) {
         <View style={styles.rowBetween}>
           <Text style={styles.orderTitle}>Order #{item.id}</Text>
 
-          <Text
-            style={[styles.status, { backgroundColor: st.bg, color: st.text }]}
-          >
-            {String(item.status || "-")}
-          </Text>
+          <OrderStatusBadge status={item.status} />
         </View>
 
         <Text style={styles.line}>
@@ -144,15 +131,6 @@ const styles = StyleSheet.create({
   },
 
   orderTitle: { fontSize: 16, fontWeight: "bold" },
-
-  status: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 10,
-    overflow: "hidden",
-    fontSize: 12,
-    fontWeight: "bold",
-  },
 
   line: { marginBottom: 4, color: "#333" },
   date: { marginTop: 6, color: "#777", fontSize: 12 },
