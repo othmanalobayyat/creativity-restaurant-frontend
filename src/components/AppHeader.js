@@ -7,10 +7,10 @@ import {
   TouchableOpacity,
   Image,
   StatusBar,
-  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { colors, radii } from "../theme";
 
 export default function AppHeader({
   title,
@@ -88,14 +88,14 @@ export default function AppHeader({
 const styles = StyleSheet.create({
   // ✅ يغطي فقط safe area فوق (النوتش)
   safeTop: {
-    backgroundColor: "#ff851b",
+    backgroundColor: colors.primary,
   },
 
   // ✅ هنا الشكل (radius) بدون ما نخرب لون النوتش
   header: {
-    backgroundColor: "#ff851b",
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
+    backgroundColor: colors.primary,
+    borderBottomLeftRadius: radii.header,
+    borderBottomRightRadius: radii.header,
     overflow: "hidden",
     paddingBottom: 8,
     paddingTop: 6,
@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: "800",
-    color: "#fff",
+    color: colors.white,
   },
 
   subtitle: {

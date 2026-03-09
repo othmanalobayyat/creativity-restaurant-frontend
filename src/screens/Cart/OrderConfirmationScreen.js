@@ -1,34 +1,39 @@
 // src/screens/Cart/OrderConfirmationScreen.js
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect, useContext } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
+import { CartContext } from "../../context/CartContext";
+import { colors, spacing, radii } from "../../theme";
 
 export default function OrderConfirmationScreen({ route, navigation }) {
   const total = Number(route.params?.total || 0);
   const itemsCount = Number(route.params?.itemsCount || 0);
 
+  const { clearCart } = useContext(CartContext);
+
+  // ✅ يفضّي الكارت أول ما يوصل المستخدم لهون
+  useEffect(() => {
+    clearCart();
+  }, [clearCart]);
+
   const goHome = useCallback(() => {
-    navigation.reset({
-      index: 0,
-      routes: [{ name: "HomeTab" }],
-    });
+    const tabNav = navigation.getParent();
+    if (tabNav) tabNav.navigate("HomeTab");
+    else navigation.navigate("HomeTab");
   }, [navigation]);
 
   const goOrders = useCallback(() => {
-    navigation.reset({
-      index: 0,
-      routes: [
-        {
-          name: "ProfileTab",
-          params: { screen: "AllMyOrders" },
-        },
-      ],
-    });
+    const tabNav = navigation.getParent();
+    if (tabNav) {
+      tabNav.navigate("ProfileTab", { screen: "AllMyOrders" });
+    } else {
+      navigation.navigate("ProfileTab", { screen: "AllMyOrders" });
+    }
   }, [navigation]);
 
   return (
     <View style={styles.container}>
-      <Icon name="check-circle" size={90} color="#ff851b" />
+      <Icon name="check-circle" size={90} color={colors.primary} />
       <Text style={styles.title}>Order Confirmed!</Text>
       <Text style={styles.subtitle}>
         {itemsCount} item(s) • Total: $ {total.toFixed(2)}
@@ -55,24 +60,29 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 24,
+    padding: spacing.xl,
   },
   title: { fontSize: 26, fontWeight: "bold", marginTop: 16 },
-  subtitle: { fontSize: 16, color: "#666", marginTop: 8, marginBottom: 24 },
+  subtitle: {
+    fontSize: 16,
+    color: colors.muted,
+    marginTop: spacing.xs,
+    marginBottom: spacing.xl,
+  },
   button: {
-    backgroundColor: "#ff851b",
+    backgroundColor: colors.primary,
     paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: 12,
+    paddingHorizontal: spacing.xl,
+    borderRadius: radii.md,
     marginTop: 12,
     width: "80%",
     alignItems: "center",
   },
-  buttonText: { color: "#fff", fontWeight: "900", fontSize: 16 },
+  buttonText: { color: colors.white, fontWeight: "900", fontSize: 16 },
   secondary: {
-    backgroundColor: "#fff",
+    backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: "#ff851b",
+    borderColor: colors.primary,
   },
-  secondaryText: { color: "#ff851b" },
+  secondaryText: { color: colors.primary },
 });

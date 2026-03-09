@@ -13,7 +13,10 @@ import {
 } from "react-native";
 import { apiFetch } from "../../api/apiFetch";
 
-const PRIMARY = "#ff851b";
+import { colors, spacing, radii } from "../../theme";
+import OrderStatusBadge, {
+  getOrderStatusStyle,
+} from "../../components/OrderStatusBadge";
 
 const STATUSES = [
   "PENDING",
@@ -23,15 +26,6 @@ const STATUSES = [
   "COMPLETED",
   "REJECTED",
 ];
-
-const STATUS_STYLES = {
-  PENDING: { bg: "#f0ad4e", text: "#fff" },
-  PROCESSING: { bg: "#5bc0de", text: "#fff" },
-  DELIVERY: { bg: "#6f42c1", text: "#fff" },
-  DELIVERED: { bg: "#17a2b8", text: "#fff" },
-  COMPLETED: { bg: "#28a745", text: "#fff" },
-  REJECTED: { bg: "#dc3545", text: "#fff" },
-};
 
 function normalizeOrders(json) {
   if (Array.isArray(json)) return json;
@@ -125,8 +119,6 @@ export default function AdminOrdersScreen({ route, navigation }) {
 
   const renderItem = useCallback(
     ({ item }) => {
-      const st = STATUS_STYLES[item.status] || STATUS_STYLES.PENDING;
-
       return (
         <TouchableOpacity
           style={styles.card}
@@ -137,14 +129,7 @@ export default function AdminOrdersScreen({ route, navigation }) {
             <Text style={styles.title}>Order #{item.id}</Text>
 
             <View style={styles.rowRight}>
-              <Text
-                style={[
-                  styles.status,
-                  { backgroundColor: st.bg, color: st.text },
-                ]}
-              >
-                {String(item.status || "-")}
-              </Text>
+              <OrderStatusBadge status={item.status} style={styles.status} />
 
               <TouchableOpacity
                 style={styles.detailsBtn}
@@ -160,7 +145,13 @@ export default function AdminOrdersScreen({ route, navigation }) {
             </View>
           </View>
 
-          <Text style={styles.line}>User: {String(item.user_id ?? "-")}</Text>
+          <Text style={styles.line}>User: {item.userFullName || "-"}</Text>
+
+          <Text style={[styles.line, { color: "#666", fontSize: 12 }]}>
+            {item.userEmail || "-"}
+            {item.userPhone ? ` • ${item.userPhone}` : ""}
+          </Text>
+
           <Text style={styles.line}>
             Total: $ {Number(item.total || 0).toFixed(2)}
           </Text>
@@ -224,7 +215,7 @@ export default function AdminOrdersScreen({ route, navigation }) {
             <Text style={styles.sheetSub}>Order #{selectedOrderId || "-"}</Text>
 
             {STATUSES.map((s) => {
-              const st = STATUS_STYLES[s] || STATUS_STYLES.PENDING;
+              const st = getOrderStatusStyle(s);
               return (
                 <TouchableOpacity
                   key={s}
@@ -249,7 +240,7 @@ export default function AdminOrdersScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: "#f7f7f7" },
+  container: { flex: 1, padding: spacing.lg, backgroundColor: colors.screenBg },
 
   topRow: {
     flexDirection: "row",
@@ -261,23 +252,23 @@ const styles = StyleSheet.create({
   filterLine: { marginTop: 4, color: "#666", fontSize: 12 },
 
   refreshBtn: {
-    backgroundColor: PRIMARY,
+    backgroundColor: colors.primary,
     paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 10,
+    borderRadius: radii.sm,
   },
-  refreshText: { color: "#fff", fontWeight: "bold" },
+  refreshText: { color: colors.white, fontWeight: "bold" },
 
-  msg: { textAlign: "center", marginTop: 12, color: "#666" },
-  debug: { color: "#999", fontSize: 12, marginBottom: 8 },
+  msg: { textAlign: "center", marginTop: 12, color: colors.muted },
+  debug: { color: colors.faint, fontSize: 12, marginBottom: 8 },
 
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: colors.white,
     padding: 14,
-    borderRadius: 12,
+    borderRadius: radii.md,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: "#eee",
+    borderColor: colors.border,
   },
   rowBetween: {
     flexDirection: "row",
@@ -303,7 +294,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 10,
+    borderRadius: radii.sm,
     borderWidth: 1,
     borderColor: "#ddd",
     backgroundColor: "#fafafa",
@@ -311,11 +302,11 @@ const styles = StyleSheet.create({
   detailsText: {
     fontSize: 12,
     fontWeight: "600",
-    color: PRIMARY,
+    color: colors.primary,
   },
   line: { marginBottom: 4, color: "#333" },
   date: { marginTop: 6, color: "#777", fontSize: 12 },
-  hint: { marginTop: 8, color: "#999", fontSize: 12 },
+  hint: { marginTop: 8, color: colors.faint, fontSize: 12 },
 
   overlay: {
     flex: 1,
@@ -324,14 +315,14 @@ const styles = StyleSheet.create({
     padding: 18,
   },
   sheet: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 16,
+    backgroundColor: colors.white,
+    borderRadius: radii.xl,
+    padding: spacing.lg,
     borderWidth: 1,
-    borderColor: "#eee",
+    borderColor: colors.border,
   },
   sheetTitle: { fontSize: 18, fontWeight: "bold" },
-  sheetSub: { marginTop: 6, color: "#666", marginBottom: 12 },
+  sheetSub: { marginTop: 6, color: colors.muted, marginBottom: 12 },
 
   sheetItem: {
     flexDirection: "row",
@@ -347,7 +338,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     paddingVertical: 12,
     alignItems: "center",
-    borderRadius: 12,
+    borderRadius: radii.md,
     backgroundColor: "#f5f5f5",
   },
   cancelText: { fontWeight: "bold", color: "#333" },
