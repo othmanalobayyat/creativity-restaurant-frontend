@@ -26,8 +26,6 @@ export default function CheckoutScreen({ route, navigation }) {
   const { clearCart, isReady } = useContext(CartContext);
   const items = route.params?.items ?? [];
 
-  if (!isReady) return null;
-
   const [address, setAddress] = useState({ city: "", street: "" });
 
   useLayoutEffect(() => {
