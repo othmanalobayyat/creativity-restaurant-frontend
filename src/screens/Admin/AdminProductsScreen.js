@@ -17,7 +17,7 @@ import {
   setAdminProductActive,
 } from "../../api/adminApi";
 
-const PRIMARY = "#ff851b";
+import { colors } from "../../theme";
 
 function safeImg(url) {
   if (!url) return null;
@@ -304,7 +304,7 @@ const s = StyleSheet.create({
     paddingVertical: 10,
   },
   btn: {
-    backgroundColor: PRIMARY,
+    backgroundColor: colors.primary,
     paddingHorizontal: 14,
     justifyContent: "center",
     borderRadius: 12,
@@ -335,13 +335,13 @@ const s = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 999,
   },
-  chipActive: { backgroundColor: PRIMARY, borderColor: PRIMARY },
+  chipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
   chipText: { color: "#333", fontWeight: "600" },
   chipTextActive: { color: "#fff" },
 
   addBtn: {
     marginTop: 12,
-    backgroundColor: PRIMARY,
+    backgroundColor: colors.primary,
     paddingVertical: 12,
     borderRadius: 14,
     alignItems: "center",

@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { fetchAdminCategories, deleteAdminCategory } from "../../api/adminApi";
 
-const PRIMARY = "#ff851b";
+import { colors } from "../../theme";
 
 export default function AdminCategoriesScreen({ navigation }) {
   const [q, setQ] = useState("");
@@ -80,7 +80,7 @@ export default function AdminCategoriesScreen({ navigation }) {
         </View>
 
         <TouchableOpacity
-          style={[s.btnWide, { backgroundColor: PRIMARY }]}
+          style={[s.btnWide, { backgroundColor: colors.primary }]}
           onPress={() =>
             navigation.navigate("AdminCategoryForm", { mode: "create" })
           }
@@ -163,7 +163,7 @@ const s = StyleSheet.create({
   },
 
   btn: {
-    backgroundColor: PRIMARY,
+    backgroundColor: colors.primary,
     paddingHorizontal: 14,
     justifyContent: "center",
     borderRadius: 12,

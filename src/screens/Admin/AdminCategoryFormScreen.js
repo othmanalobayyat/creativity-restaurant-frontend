@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { createAdminCategory, updateAdminCategory } from "../../api/adminApi";
 
-const PRIMARY = "#ff851b";
+import { colors } from "../../theme";
 
 export default function AdminCategoryFormScreen({ navigation, route }) {
   const mode = route?.params?.mode || "create";
@@ -89,7 +89,7 @@ const s = StyleSheet.create({
 
   saveBtn: {
     marginTop: 16,
-    backgroundColor: PRIMARY,
+    backgroundColor: colors.primary,
     paddingVertical: 12,
     borderRadius: 14,
     alignItems: "center",

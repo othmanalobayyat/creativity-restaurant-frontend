@@ -13,7 +13,7 @@ import Icon from "react-native-vector-icons/FontAwesome";
 import { formatDateSmart, TZ_MODE, DATE_FORMAT } from "../../utils/formatDate";
 import { fetchAdminDashboard } from "../../api/adminApi";
 
-const PRIMARY = "#ff851b";
+import { colors } from "../../theme";
 
 export default function AdminHomeScreen({ navigation }) {
   const [data, setData] = useState(null);
@@ -153,7 +153,7 @@ export default function AdminHomeScreen({ navigation }) {
         activeOpacity={0.9}
       >
         <View style={s.actionRow}>
-          <Icon name="shopping-bag" size={20} color={PRIMARY} />
+          <Icon name="shopping-bag" size={20} color={colors.primary} />
           <Text style={s.actionTitle}>Products</Text>
         </View>
         <Text style={s.actionSub}>Add / Edit / Disable products</Text>
@@ -165,7 +165,7 @@ export default function AdminHomeScreen({ navigation }) {
         activeOpacity={0.9}
       >
         <View style={s.actionRow}>
-          <Icon name="tags" size={20} color={PRIMARY} />
+          <Icon name="tags" size={20} color={colors.primary} />
           <Text style={s.actionTitle}>Categories</Text>
         </View>
         <Text style={s.actionSub}>Create & organize categories</Text>
@@ -177,7 +177,7 @@ export default function AdminHomeScreen({ navigation }) {
         activeOpacity={0.9}
       >
         <View style={s.actionRow}>
-          <Icon name="shopping-cart" size={20} color={PRIMARY} />
+          <Icon name="shopping-cart" size={20} color={colors.primary} />
           <Text style={s.actionTitle}>Orders</Text>
         </View>
         <Text style={s.actionSub}>View & update order status</Text>
@@ -243,7 +243,7 @@ const s = StyleSheet.create({
   sub: { color: "#666", marginTop: 6 },
 
   refreshBtn: {
-    backgroundColor: PRIMARY,
+    backgroundColor: colors.primary,
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 10,
@@ -302,7 +302,7 @@ const s = StyleSheet.create({
     gap: 10,
     marginBottom: 6,
   },
-  actionTitle: { fontSize: 18, fontWeight: "bold", color: PRIMARY },
+  actionTitle: { fontSize: 18, fontWeight: "bold", color: colors.primary },
   actionSub: { marginTop: 6, color: "#666" },
 
   lastHeader: {
@@ -311,7 +311,7 @@ const s = StyleSheet.create({
     alignItems: "center",
     marginTop: 6,
   },
-  link: { color: PRIMARY, fontWeight: "bold" },
+  link: { color: colors.primary, fontWeight: "bold" },
 
   orderCard: {
     backgroundColor: "#fff",
@@ -328,7 +328,7 @@ const s = StyleSheet.create({
   },
   orderTitle: { fontSize: 16, fontWeight: "bold" },
   badge: {
-    backgroundColor: PRIMARY,
+    backgroundColor: colors.primary,
     color: "#fff",
     paddingHorizontal: 10,
     paddingVertical: 4,

@@ -21,7 +21,7 @@ import {
   fetchAdminCategories,
 } from "../../api/adminApi";
 
-const PRIMARY = "#ff851b";
+import { colors } from "../../theme";
 
 function toNumberOrNull(v) {
   if (v == null) return null;
@@ -353,7 +353,7 @@ const s = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 999,
   },
-  chipActive: { backgroundColor: PRIMARY, borderColor: PRIMARY },
+  chipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
   chipText: { color: "#333", fontWeight: "600" },
   chipTextActive: { color: "#fff" },
 
@@ -371,7 +371,7 @@ const s = StyleSheet.create({
   previewText: { color: "#777", fontSize: 12 },
 
   pickBtn: {
-    backgroundColor: PRIMARY,
+    backgroundColor: colors.primary,
     paddingVertical: 12,
     borderRadius: 14,
     alignItems: "center",
@@ -380,7 +380,7 @@ const s = StyleSheet.create({
 
   saveBtn: {
     marginTop: 18,
-    backgroundColor: PRIMARY,
+    backgroundColor: colors.primary,
     paddingVertical: 12,
     borderRadius: 14,
     alignItems: "center",
