@@ -63,11 +63,8 @@ export default function ProductDetailScreen({ route }) {
       price: item.price ?? item.itemPrice ?? 0,
       image: item.image ?? item.itemImage ?? item.img ?? "",
       description: item.description ?? item.itemDescription ?? "",
-      quantity: item.quantity ?? 0,
     };
   }, [item, itemId]);
-
-  const outOfStock = normalized?.quantity === 0;
 
   const handleAddToCart = useCallback(() => {
     if (!normalized) return;
@@ -134,14 +131,11 @@ export default function ProductDetailScreen({ route }) {
         <Text style={styles.description}>{normalized.description}</Text>
 
         <TouchableOpacity
-          style={[styles.addButton, outOfStock && { backgroundColor: "#ccc" }]}
+          style={styles.addButton}
           activeOpacity={0.85}
           onPress={handleAddToCart}
-          disabled={outOfStock}
         >
-          <Text style={styles.addButtonText}>
-            {outOfStock ? "Out of stock" : "Add to cart"}
-          </Text>
+          <Text style={styles.addButtonText}>Add to cart</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

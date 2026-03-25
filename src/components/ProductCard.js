@@ -58,11 +58,7 @@ function ProductCard({ item, onOpen, onFavChanged, favSyncKey }) {
       </TouchableOpacity>
 
       {/* + Open */}
-      <TouchableOpacity
-        style={[styles.addButton, item.quantity === 0 && { backgroundColor: "#ccc" }]}
-        onPress={handlePress}
-        disabled={item.quantity === 0}
-      >
+      <TouchableOpacity style={styles.addButton} onPress={handlePress}>
         <Text style={styles.addButtonText}>+</Text>
       </TouchableOpacity>
     </Pressable>
