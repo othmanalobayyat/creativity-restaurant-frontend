@@ -14,7 +14,7 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
 
-import { uploadToCloudinaryUnsigned } from "../../api/cloudinaryUpload";
+import { uploadAdminImage } from "../../api/adminApi";
 import {
   createAdminProduct,
   updateAdminProduct,
@@ -126,7 +126,7 @@ export default function AdminProductFormScreen({ navigation, route }) {
 
       const dataUrl = `data:image/jpeg;base64,${manipulated.base64}`;
 
-      const url = await uploadToCloudinaryUnsigned(dataUrl);
+      const { url } = await uploadAdminImage(dataUrl);
       setImageUrl(url);
     } catch (e) {
       Alert.alert("Upload Error", String(e?.message || e));
