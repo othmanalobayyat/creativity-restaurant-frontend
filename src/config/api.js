@@ -1,3 +1,6 @@
 // src/config/api.js
-export const BASE_URL = "http://192.168.1.2:5000"; // Local IP (replace with your machine's IP)
-//export const BASE_URL = "https://creativity-restaurant-backend.onrender.com"; // Deployed backend URL
+// Set EXPO_PUBLIC_API_URL in .env (e.g. for production) or leave unset to use dev default.
+export const BASE_URL =
+  typeof process !== "undefined" && process.env?.EXPO_PUBLIC_API_URL
+    ? process.env.EXPO_PUBLIC_API_URL.replace(/\/$/, "")
+    : "http://192.168.1.2:5000";
