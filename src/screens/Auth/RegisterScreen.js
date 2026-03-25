@@ -20,7 +20,7 @@ import {
   validateConfirmPassword,
 } from "./utils/validators";
 
-const PRIMARY = "#ff851b";
+import { colors } from "../../theme";
 
 export default function RegisterScreen({ navigation }) {
   const { login } = useAuth();
@@ -151,7 +151,7 @@ export default function RegisterScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: PRIMARY,
+    backgroundColor: colors.primary,
     paddingVertical: 14,
     borderRadius: 16,
     alignItems: "center",
@@ -166,5 +166,5 @@ const styles = StyleSheet.create({
 
   row: { flexDirection: "row", justifyContent: "center", marginTop: 14 },
   gray: { color: "#666" },
-  link: { color: PRIMARY, fontWeight: "900" },
+  link: { color: colors.primary, fontWeight: "900" },
 });

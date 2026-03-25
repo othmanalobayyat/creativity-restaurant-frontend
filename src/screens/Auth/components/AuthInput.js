@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 
-const PRIMARY = "#ff851b";
+import { colors } from "../../../theme";
 
 export default function AuthInput({
   label,
@@ -30,7 +30,7 @@ export default function AuthInput({
 
       <View style={styles.inputRow}>
         <View style={styles.iconBubble}>
-          <Icon name={icon} size={16} color={PRIMARY} />
+          <Icon name={icon} size={16} color={colors.primary} />
         </View>
 
         <TextInput
@@ -60,7 +60,7 @@ export default function AuthInput({
             style={styles.eyeBtn}
             activeOpacity={0.8}
           >
-            <Icon name={rightIcon} size={18} color={PRIMARY} />
+            <Icon name={rightIcon} size={18} color={colors.primary} />
           </TouchableOpacity>
         ) : null}
       </View>
@@ -97,5 +97,5 @@ const styles = StyleSheet.create({
   },
 
   eyeBtn: { paddingHorizontal: 10, paddingVertical: 10, borderRadius: 12 },
-  eyeText: { color: PRIMARY, fontWeight: "900", fontSize: 13 },
+  eyeText: { color: colors.primary, fontWeight: "900", fontSize: 13 },
 });

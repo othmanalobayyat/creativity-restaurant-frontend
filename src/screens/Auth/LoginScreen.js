@@ -15,7 +15,7 @@ import AuthCard from "./components/AuthCard";
 import AuthInput from "./components/AuthInput";
 import { validateEmail, validatePassword } from "./utils/validators";
 
-const PRIMARY = "#ff851b";
+import { colors } from "../../theme";
 
 export default function LoginScreen({ navigation }) {
   const { login } = useAuth();
@@ -113,10 +113,10 @@ export default function LoginScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   forgotWrap: { marginTop: -4, marginBottom: 10, alignItems: "flex-end" },
-  forgot: { color: PRIMARY, fontWeight: "800" },
+  forgot: { color: colors.primary, fontWeight: "800" },
 
   button: {
-    backgroundColor: PRIMARY,
+    backgroundColor: colors.primary,
     paddingVertical: 14,
     borderRadius: 16,
     alignItems: "center",
@@ -131,5 +131,5 @@ const styles = StyleSheet.create({
 
   row: { flexDirection: "row", justifyContent: "center", marginTop: 14 },
   gray: { color: "#666" },
-  link: { color: PRIMARY, fontWeight: "900" },
+  link: { color: colors.primary, fontWeight: "900" },
 });

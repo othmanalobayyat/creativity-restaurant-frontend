@@ -10,7 +10,7 @@ import {
   ScrollView,
 } from "react-native";
 
-const PRIMARY = "#ff851b";
+import { colors } from "../../../theme";
 const LOGO_SIZE = 140;
 
 export default function AuthLayout({
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: "45%",
-    backgroundColor: PRIMARY,
+    backgroundColor: colors.primary,
     borderBottomLeftRadius: 28,
     borderBottomRightRadius: 28,
     opacity: 0.98,
