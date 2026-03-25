@@ -88,8 +88,8 @@ export function CartProvider({ children }) {
   }, []);
 
   const value = useMemo(
-    () => ({ cart, addToCart, increaseQuantity, decreaseQuantity, clearCart }),
-    [cart, addToCart, increaseQuantity, decreaseQuantity, clearCart],
+    () => ({ cart, isReady, addToCart, increaseQuantity, decreaseQuantity, clearCart }),
+    [cart, isReady, addToCart, increaseQuantity, decreaseQuantity, clearCart],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

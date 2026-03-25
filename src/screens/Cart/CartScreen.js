@@ -5,6 +5,7 @@ import {
   FlatList,
   StyleSheet,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 
 import { CartContext } from "../../context/CartContext";
@@ -16,7 +17,9 @@ import CartItem from "./components/CartItem";
 const PRIMARY = "#ff851b";
 
 export default function CartScreen({ navigation }) {
-  const { cart, increaseQuantity, decreaseQuantity } = useContext(CartContext);
+  const { cart, isReady, increaseQuantity, decreaseQuantity } = useContext(CartContext);
+
+  if (!isReady) return <ActivityIndicator style={{ flex: 1 }} color="#ff851b" />;
 
   const totalPrice = useMemo(() => {
     return cart.reduce((sum, item) => {

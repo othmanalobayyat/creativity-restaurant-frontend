@@ -23,8 +23,10 @@ import CheckoutSummary from "./components/CheckoutSummary";
 import CheckoutConfirmButton from "./components/CheckoutConfirmButton";
 
 export default function CheckoutScreen({ route, navigation }) {
-  const { clearCart } = useContext(CartContext);
+  const { clearCart, isReady } = useContext(CartContext);
   const items = route.params?.items ?? [];
+
+  if (!isReady) return null;
 
   const [address, setAddress] = useState({ city: "", street: "" });
 
