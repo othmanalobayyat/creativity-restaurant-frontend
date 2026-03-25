@@ -1,9 +1,10 @@
 // src/navigation/theme/navigationTheme.js
 import { Platform } from "react-native";
+import { colors } from "../../theme";
 
 export const COLORS = {
-  primary: "#ff851b",
-  white: "#ffffff",
+  primary: colors.primary,
+  white: colors.white,
   gray: "gray",
 };
 
