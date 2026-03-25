@@ -179,7 +179,7 @@ export default function AdminProductsScreen({ navigation }) {
         <TouchableOpacity
           style={s.addBtn}
           onPress={() =>
-            navigation.navigate("AdminProductForm", { mode: "create" })
+            navigation.push("AdminProductForm", { mode: "create" })
           }
           activeOpacity={0.9}
         >
