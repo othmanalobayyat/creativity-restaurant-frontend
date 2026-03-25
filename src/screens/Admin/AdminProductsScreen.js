@@ -267,8 +267,6 @@ export default function AdminProductsScreen({ navigation }) {
     <View style={s.container}>
       {header}
 
-      <Text style={s.debug}>count: {filteredProducts.length}</Text>
-
       {loading ? (
         <View style={s.center}>
           <ActivityIndicator size="large" />
@@ -348,7 +346,6 @@ const s = StyleSheet.create({
   },
   addText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
 
-  debug: { color: "#999", fontSize: 12, marginBottom: 8 },
   muted: { textAlign: "center", marginTop: 12, color: "#666" },
   center: { alignItems: "center", marginTop: 16 },
 

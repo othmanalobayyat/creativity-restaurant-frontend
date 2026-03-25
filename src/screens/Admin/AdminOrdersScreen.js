@@ -171,8 +171,6 @@ export default function AdminOrdersScreen({ route, navigation }) {
     <View style={styles.container}>
       {header}
 
-      <Text style={styles.debug}>count: {orders.length}</Text>
-
       {loading ? (
         <View style={{ marginTop: 20, alignItems: "center" }}>
           <ActivityIndicator size="large" />
@@ -245,8 +243,6 @@ const styles = StyleSheet.create({
   refreshText: { color: colors.white, fontWeight: "bold" },
 
   msg: { textAlign: "center", marginTop: 12, color: colors.muted },
-  debug: { color: colors.faint, fontSize: 12, marginBottom: 8 },
-
   card: {
     backgroundColor: colors.white,
     padding: 14,

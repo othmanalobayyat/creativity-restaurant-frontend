@@ -48,7 +48,7 @@ export default function FavoritesScreen({ navigation }) {
           keyExtractor={(item) => String(item.id)}
           renderItem={({ item }) => (
             <ProductCard
-              item={{ ...item, image: `${item.image}?=${item.id}` }}
+              item={{ ...item, image: `${item.image}?v=${item.id}` }}
               onOpen={onOpenProduct}
               onFavChanged={onFavChanged}
             />
