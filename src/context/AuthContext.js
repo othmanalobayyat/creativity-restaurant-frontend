@@ -59,10 +59,15 @@ export function AuthProvider({ children }) {
   }, []);
 
   const logout = useCallback(async () => {
-    await AsyncStorage.multiRemove([TOKEN_KEY, USER_KEY]);
-    await clearProfileLocal(); // ✅ يمسح الاسم القديم
-    setToken(null);
-    setUser(null);
+    try {
+      await AsyncStorage.multiRemove([TOKEN_KEY, USER_KEY]);
+      await clearProfileLocal(); // ✅ يمسح الاسم القديم
+    } catch (e) {
+      console.warn("logout: storage cleanup failed", e);
+    } finally {
+      setToken(null);
+      setUser(null);
+    }
   }, []);
 
   const value = useMemo(
