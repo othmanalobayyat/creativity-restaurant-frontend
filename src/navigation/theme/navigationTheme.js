@@ -15,7 +15,7 @@ export const defaultStackOptions = {
   headerBackTitleVisible: false,
 
   // Android status bar
-  statusBarStyle: "light",
+  statusBarStyle: Platform.OS === "android" ? "light" : undefined,
   statusBarColor: COLORS.primary,
   statusBarTranslucent: Platform.OS === "android" ? false : undefined,
 };
