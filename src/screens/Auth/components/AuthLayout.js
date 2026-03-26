@@ -1,3 +1,4 @@
+// src/screens/Auth/components/AuthLayout.js
 import React from "react";
 import {
   View,
@@ -30,11 +31,14 @@ export default function AuthLayout({
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 0}
       >
         <ScrollView
           contentContainerStyle={styles.scroll}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          showsVerticalScrollIndicator={false}
         >
           <View style={styles.centerWrap}>
             <View style={styles.logoSection}>
@@ -75,12 +79,15 @@ const styles = StyleSheet.create({
     opacity: 0.98,
   },
 
-  scroll: { flexGrow: 1 },
-  centerWrap: {
-    flex: 1,
+  scroll: {
+    flexGrow: 1,
     justifyContent: "center",
-    paddingTop: (StatusBar.currentHeight || 0) + 10,
-    paddingBottom: 22,
+  },
+  centerWrap: {
+    flexGrow: 1,
+    justifyContent: "flex-start",
+    paddingTop: (StatusBar.currentHeight || 0) + 24,
+    paddingBottom: 32,
   },
 
   logoSection: {

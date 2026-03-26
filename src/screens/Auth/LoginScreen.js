@@ -1,3 +1,4 @@
+// src/screens/Auth/LoginScreen.js
 import React, { useState, useCallback } from "react";
 import {
   View,
