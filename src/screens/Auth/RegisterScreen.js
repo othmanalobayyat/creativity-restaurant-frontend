@@ -19,6 +19,7 @@ import {
   validatePassword,
   validateFullName,
   validateConfirmPassword,
+  validatePhone,
 } from "./utils/validators";
 
 import { colors } from "../../theme";
@@ -46,6 +47,9 @@ export default function RegisterScreen({ navigation }) {
     const vp = validatePassword(password);
     if (!vp.ok) return Alert.alert("Weak password", vp.msg);
 
+    const vph = validatePhone(phone);
+    if (!vph.ok) return Alert.alert("Invalid phone", vph.msg);
+
     const vc = validateConfirmPassword(password, confirm);
     if (!vc.ok) return Alert.alert("Mismatch", vc.msg);
 
@@ -57,7 +61,7 @@ export default function RegisterScreen({ navigation }) {
         body: JSON.stringify({
           fullName: vn.value,
           email: ve.value,
-          phone: phone.trim() || null,
+          phone: vph.value,
           password: vp.value,
         }),
       });
