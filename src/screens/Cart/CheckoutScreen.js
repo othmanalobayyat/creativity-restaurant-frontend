@@ -34,7 +34,7 @@ export default function CheckoutScreen({ route, navigation }) {
       headerBackTitleVisible: false,
       headerTintColor: "#fff",
       headerStyle: { backgroundColor: "#ff851b" },
-      headerTitleStyle: { fontWeight: "bold" },
+      headerTitleStyle: { fontWeight: "bold", fontSize: 24 },
     });
   }, [navigation]);
 

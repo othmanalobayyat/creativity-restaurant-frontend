@@ -76,7 +76,7 @@ export default function AllMyOrdersScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>All My Orders</Text>
+      <Text style={styles.title}>Review Your Orders</Text>
 
       {loading ? (
         <Text style={styles.msg}>Loading...</Text>

@@ -13,7 +13,15 @@ const Stack = createNativeStackNavigator();
 
 export default function CartStack() {
   return (
-    <Stack.Navigator screenOptions={defaultStackOptions}>
+    <Stack.Navigator
+      screenOptions={{
+        ...defaultStackOptions,
+        headerTitleStyle: {
+          ...(defaultStackOptions?.headerTitleStyle || {}),
+          fontSize: 24,
+        },
+      }}
+    >
       <Stack.Screen
         name="Cart"
         component={CartScreen}

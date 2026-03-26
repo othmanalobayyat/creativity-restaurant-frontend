@@ -14,7 +14,15 @@ const Stack = createNativeStackNavigator();
 
 export default function ProfileStack() {
   return (
-    <Stack.Navigator screenOptions={defaultStackOptions}>
+    <Stack.Navigator
+      screenOptions={{
+        ...defaultStackOptions,
+        headerTitleStyle: {
+          ...(defaultStackOptions?.headerTitleStyle || {}),
+          fontSize: 22,
+        },
+      }}
+    >
       <Stack.Screen
         name="Profile"
         component={ProfileScreen}

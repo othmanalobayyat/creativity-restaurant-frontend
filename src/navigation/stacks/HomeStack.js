@@ -20,7 +20,7 @@ export default function HomeStack() {
       <Stack.Screen
         name="ProductDetail"
         component={ProductDetailScreen}
-        options={{ title: "Product Detail" }}
+        options={{ title: "" }}
       />
     </Stack.Navigator>
   );
