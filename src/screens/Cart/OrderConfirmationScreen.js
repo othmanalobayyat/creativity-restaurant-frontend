@@ -1,6 +1,7 @@
 // src/screens/Cart/OrderConfirmationScreen.js
 import React, { useCallback, useEffect, useContext } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { StackActions } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { CartContext } from "../../context/CartContext";
 import { colors, spacing, radii } from "../../theme";
@@ -14,21 +15,20 @@ export default function OrderConfirmationScreen({ route, navigation }) {
   // ✅ يفضّي الكارت أول ما يوصل المستخدم لهون
   useEffect(() => {
     clearCart();
-  }, [clearCart]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const goHome = useCallback(() => {
+    navigation.dispatch(StackActions.popToTop());
     const tabNav = navigation.getParent();
     if (tabNav) tabNav.navigate("HomeTab");
     else navigation.navigate("HomeTab");
   }, [navigation]);
 
   const goOrders = useCallback(() => {
+    navigation.dispatch(StackActions.popToTop());
     const tabNav = navigation.getParent();
-    if (tabNav) {
-      tabNav.navigate("ProfileTab", { screen: "AllMyOrders" });
-    } else {
-      navigation.navigate("ProfileTab", { screen: "AllMyOrders" });
-    }
+    if (tabNav) tabNav.navigate("ProfileTab");
+    else navigation.navigate("ProfileTab");
   }, [navigation]);
 
   return (
