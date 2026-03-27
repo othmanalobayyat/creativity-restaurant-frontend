@@ -1,11 +1,79 @@
-# Sample Snack app
+# Creativity Restaurant — Frontend
 
-Open the `App.js` file to start writing some code. You can preview the changes directly on your phone or tablet by scanning the **QR code** or use the iOS or Android emulators. When you're done, click **Save** and share the link!
+A full-stack mobile restaurant ordering system with real-time stock management and admin control, built as a university project and extended as a portfolio piece.
 
-When you're ready to see everything that Expo provides (or if you want to use your own editor) you can **Download** your project and use it with [expo cli](https://docs.expo.dev/get-started/installation/#expo-cli)).
+## Tech Stack
 
-All projects created in Snack are publicly available, so you can easily share the link to this project via link, or embed it on a web page with the `<>` button.
+- **React Native** (Expo)
+- **React Navigation** — native stack + bottom tabs
+- **Context API** — cart state, auth state
+- **AsyncStorage** — token, user, and favorites persistence
 
-If you're having problems, you can tweet to us [@expo](https://twitter.com/expo) or ask in our [forums](https://forums.expo.dev/c/expo-dev-tools/61) or [Discord](https://chat.expo.dev/).
+---
 
-Snack is Open Source. You can find the code on the [GitHub repo](https://github.com/expo/snack).
+## Features
+
+### Browsing & Menu
+
+- Browse menu items by category with live stock status
+- Search items by name
+- Product detail view with out-of-stock enforcement (button disabled)
+
+### Cart & Checkout
+
+- Add/remove items, adjust quantities, view running total
+- Address entry screen
+- Checkout flow with order confirmation and cart auto-clear
+
+### Auth & Profile
+
+- JWT-based login and registration
+- Profile management (name, phone, email)
+- Saved favorites
+
+### Admin Panel
+
+- Add, edit, and delete products
+- Upload product images via backend (no credentials in the app)
+- Manage categories
+
+---
+
+## Project Structure
+
+```
+src/
+  api/           # API calls (apiFetch, adminApi)
+  components/    # Reusable UI (ProductCard, CartItem, etc.)
+  context/       # CartContext, AuthContext
+  navigation/    # Stack and tab navigators
+  screens/       # App screens (Home, Cart, Profile, Admin)
+  theme/         # Colors, spacing, typography
+```
+
+---
+
+## Getting Started
+
+```bash
+npm install
+npx expo start
+```
+
+Create `.env` or edit `src/config/api.js` to set `API_BASE_URL` to your running backend URL.
+
+---
+
+## Notes
+
+- All image uploads go through the backend — no Cloudinary credentials are stored in the app
+- Stock is validated both on the UI and server side to prevent invalid orders
+
+---
+
+## Future Improvements
+
+- Improve user feedback with better error messages
+- Add order status notifications
+- Enhance filtering and search capabilities
+- Improve UI consistency and animations
