@@ -1,6 +1,6 @@
 # Creativity Restaurant — Frontend
 
-A full-stack mobile restaurant ordering system with real-time stock management and admin control, built as a university project and extended as a portfolio piece.
+A full-stack mobile restaurant ordering system with real-time stock management and admin control, built as a university project and extended as a portfolio piece. This is a portfolio/demo version and can be extended or customized for real-world deployments.
 
 ## Tech Stack
 
@@ -77,3 +77,9 @@ Edit `src/config/api.js` to set `API_BASE_URL` to your running backend URL.
 - Add order status notifications
 - Enhance filtering and search capabilities
 - Improve UI consistency and animations
+
+---
+
+## Usage Notice
+
+This project is shared for portfolio and demonstration purposes only. Commercial use, redistribution, or modification without explicit written permission from the author is not permitted.
