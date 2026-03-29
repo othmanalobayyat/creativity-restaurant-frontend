@@ -60,7 +60,7 @@ npm install
 npx expo start
 ```
 
-Create `.env` or edit `src/config/api.js` to set `API_BASE_URL` to your running backend URL.
+Edit `src/config/api.js` to set `API_BASE_URL` to your running backend URL.
 
 ---
 
